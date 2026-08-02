@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Design Concept — Console v4</title>
+<title>Pedro Paz — Design Concept (Console)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -31,41 +31,179 @@
 
   /* Session animation keeps the technical/mono voice — everything else
      switches to the site's serif */
-  .session, .session * {
+  .session, .session *,
+  .nav__tag, .work-card__tag, .work-card__meta,
+  .about-skills, .contact__links, .footer {
     font-family: 'IBM Plex Mono', monospace;
   }
 
+  a { color: inherit; text-decoration: none; }
+
+  /* ---------- Access gate ---------- */
+  .gate {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    transition: opacity 0.5s ease, visibility 0s linear 0s;
+  }
+
+  .gate.is-unlocked {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+  }
+
+  .gate__form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 0 1.5rem;
+    text-align: center;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .gate__mark { font-size: 1.4rem; color: var(--fg); }
+  .gate__label { font-size: 0.85rem; line-height: 1.6; color: var(--fg-dim); }
+
+  .gate__input {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 0.85rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--fg);
+    text-align: center;
+    transition: border-color 0.3s ease;
+  }
+
+  .gate__input:focus { outline: none; border-color: var(--accent); }
+
+  .gate__submit {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    padding: 0.85rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  .gate__submit:hover { background: var(--accent); color: var(--bg); }
+
+  .gate__error { min-height: 1.1em; font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--rec); }
+
+  .gate__form.is-shake { animation: gateShake 0.4s ease; }
+
+  @keyframes gateShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  /* ---------- Nav ---------- */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem clamp(1.5rem, 4vw, 3rem);
+    background: rgba(10, 10, 10, 0.82);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nav__tag {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+
+  .nav__toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .nav__toggle span {
+    width: 22px;
+    height: 1px;
+    background: var(--fg);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  .nav-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.25rem;
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    transform: translateY(-100%);
+    transition: transform 0.5s ease;
+  }
+
+  .nav-menu.is-open { transform: translateY(0); }
+
+  .nav-menu a { transition: color 0.3s ease; }
+  .nav-menu a:hover { color: var(--accent); }
+
+  /* ---------- Sections (shared) ---------- */
+  main > section:not(.hero) {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: clamp(4rem, 9vw, 6.5rem) clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 1.25rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .section-num { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--accent); }
+  .section-head h2 { font-size: clamp(1.6rem, 3vw, 2.1rem); font-weight: 400; }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: clamp(7rem, 14vh, 9rem) clamp(1.5rem, 4vw, 3rem) 2rem; }
+
   .hud-frame {
     max-width: 1000px;
-    margin: 4vh auto 0;
+    margin: 0 auto;
     padding: clamp(1.5rem, 4vw, 3rem);
     border: 1px solid var(--line);
   }
 
-  .hud-topline {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    color: var(--fg-dim);
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--line);
-    margin-bottom: 3rem;
-  }
-
-  .hud-topline .hud-tag { color: var(--accent); }
-
-  /* Monospace only — ticking digits need fixed-width glyphs or the whole
-     readout shifts as it updates 24x/sec */
-  #clock {
-    font-family: 'IBM Plex Mono', monospace;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .hud-center {
-    text-align: center;
-    padding: 0 0 3rem;
-  }
+  .hud-center { text-align: center; padding: 0 0 3rem; }
 
   .hud-eyebrow {
     font-size: 0.75rem;
@@ -138,7 +276,7 @@
 
   .session__ruler-spacer {
     font-size: 0.6rem;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     color: var(--fg-faint);
   }
 
@@ -312,151 +450,379 @@
 
   .hud-btn.is-denied { border-color: var(--rec); color: var(--rec); }
 
-  /* Work card concept */
-  .concept-section {
-    max-width: 1000px;
-    margin: 6vh auto 0;
-    padding: 0 clamp(1.5rem, 4vw, 3rem);
+  /* ---------- Work ---------- */
+  .work-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(1.25rem, 3vw, 1.75rem);
   }
 
-  .concept-label {
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
-    color: var(--fg-faint);
-    margin-bottom: 1.25rem;
-    text-transform: uppercase;
+  .work-card { border: 1px solid var(--line); }
+
+  .work-card__frame {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-bottom: 3px solid var(--t-color, var(--accent));
+    overflow: hidden;
   }
 
-  .hud-card {
-    width: 280px;
-    border: 1px solid var(--line);
-    border-left: 3px solid var(--accent);
-    padding: 1.25rem;
-  }
+  .work-card__frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-  .hud-card__tag {
-    font-size: 0.65rem;
+  .work-card__body { padding: 1rem 1.1rem 1.25rem; }
+
+  .work-card__tag {
+    font-size: 0.62rem;
     letter-spacing: 0.1em;
-    color: var(--accent);
-    margin-bottom: 2.5rem;
+    text-transform: uppercase;
+    color: var(--t-color, var(--accent));
+    margin-bottom: 0.6rem;
   }
 
-  .hud-card h3 {
-    font-family: 'DM Serif Display', serif;
-    font-weight: 400;
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+  .work-card h3 { font-family: 'DM Serif Display', serif; font-size: 1.15rem; font-weight: 400; margin-bottom: 0.3rem; }
+  .work-card__meta { font-size: 0.68rem; color: var(--fg-dim); }
+
+  /* ---------- About ---------- */
+  .about-body {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: clamp(2rem, 5vw, 3.5rem);
+    align-items: start;
   }
 
-  .hud-card__meta {
-    font-size: 0.7rem;
+  .about-lead { font-size: clamp(1.15rem, 2.2vw, 1.5rem); }
+  .about-body p:not(.about-lead) { color: var(--fg-dim); margin-top: 1.25rem; font-size: 0.95rem; }
+
+  .about-skills {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.75rem;
+  }
+
+  .about-skills li {
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid var(--line);
+    padding: 0.5rem 0.85rem;
     color: var(--fg-dim);
-    letter-spacing: 0.05em;
   }
 
-  /* Notes footer */
-  .concept-notes {
-    max-width: 1000px;
-    margin: 8vh auto 6vh;
-    padding: 2rem clamp(1.5rem, 4vw, 3rem);
+  /* ---------- Contact ---------- */
+  .contact { text-align: center; }
+
+  .contact > p { color: var(--fg-dim); margin-bottom: 2.5rem; }
+
+  .contact__email {
+    display: inline-block;
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.4rem, 3.5vw, 2rem);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.4rem;
+    transition: color 0.3s ease, border-color 0.3s ease;
+  }
+
+  .contact__email:hover { color: var(--accent); border-color: var(--accent); }
+
+  .contact__links {
+    margin-top: 2.5rem;
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+
+  .contact__links a:hover { color: var(--fg); }
+
+  /* ---------- Footer ---------- */
+  .footer {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    color: var(--fg-faint);
     border-top: 1px solid var(--line);
   }
 
-  .concept-notes h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.15rem;
-    color: var(--accent);
-    margin-bottom: 1.25rem;
+  @media (max-width: 860px) {
+    .work-grid { grid-template-columns: repeat(2, 1fr); }
+    .about-body { grid-template-columns: 1fr; }
   }
-
-  .concept-notes ul {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-    font-size: 0.85rem;
-    line-height: 1.6;
-    color: var(--fg-dim);
-    max-width: 720px;
-  }
-
-  .concept-notes strong { color: var(--fg); }
 
   @media (max-width: 640px) {
     .session__head, .session__ruler-spacer { width: 92px; padding: 0 0.5rem; }
     .session__playhead-track { left: 92px; }
     .session__ms { display: none; }
+    .work-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-<div class="hud-frame">
-  <div class="hud-topline">
-    <span class="hud-tag">PEDRO PAZ // AUDIO POST</span>
-    <span id="clock">TC 00:00:00:00</span>
-  </div>
+<div class="gate" id="gate">
+  <form class="gate__form" id="gateForm" autocomplete="off">
+    <p class="gate__mark">Pedro Paz</p>
+    <p class="gate__label">This is a design concept preview.<br>Enter the password to continue.</p>
+    <input type="password" id="gatePassword" class="gate__input" placeholder="Password" autocomplete="off">
+    <button type="submit" class="gate__submit">Enter</button>
+    <p class="gate__error" id="gateError" aria-live="polite"></p>
+  </form>
+</div>
 
-  <div class="hud-center">
-    <p class="hud-eyebrow">// FILM · TELEVISION · DOCUMENTARY</p>
-    <h1 class="hud-name">Pedro Paz</h1>
-    <p class="hud-role"><span id="roleText"></span><span class="cursor"></span></p>
-  </div>
+<header class="nav">
+  <span class="nav__tag">PEDRO PAZ // AUDIO POST</span>
+  <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</header>
 
-  <div class="session" id="session">
-    <div class="session__row">
-      <div class="session__ruler-spacer">SESSION</div>
-      <div class="session__ruler-ticks" id="rulerLane"></div>
+<div class="nav-menu" id="navMenu">
+  <a href="#work">Work</a>
+  <a href="#about">About</a>
+  <a href="#contact">Contact</a>
+</div>
+
+<main id="top">
+
+  <section class="hero" id="hero">
+    <div class="hud-frame">
+      <div class="hud-center">
+        <p class="hud-eyebrow">// FILM · TELEVISION · DOCUMENTARY</p>
+        <h1 class="hud-name">Pedro Paz</h1>
+        <p class="hud-role"><span id="roleText"></span><span class="cursor"></span></p>
+      </div>
+
+      <div class="session" id="session">
+        <div class="session__row">
+          <div class="session__ruler-spacer">SESSION TC</div>
+          <div class="session__ruler-ticks" id="rulerLane"></div>
+        </div>
+        <div class="session__playhead-track"><div class="session__playhead"></div></div>
+      </div>
+
+      <div class="session__meta">
+        <span>CH 2</span>
+        <span>48kHz / 24bit</span>
+        <span>-18.4 LUFS</span>
+        <span class="rec">REC</span>
+      </div>
+
+      <div class="hud-btn-wrap">
+        <button class="hud-btn" id="sourceBtn"><span class="hud-btn__dot"></span><span class="hud-btn__label">Add Source</span></button>
+      </div>
     </div>
-    <div class="session__playhead-track"><div class="session__playhead"></div></div>
-  </div>
+  </section>
 
-  <div class="session__meta">
-    <span>CH 2</span>
-    <span>48kHz / 24bit</span>
-    <span>-18.4 LUFS</span>
-    <span class="rec">REC</span>
-  </div>
+  <section class="work" id="work">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <h2>Selected Work</h2>
+    </div>
+    <div class="work-grid">
 
-  <div class="hud-btn-wrap">
-    <button class="hud-btn" id="sourceBtn"><span class="hud-btn__dot"></span><span class="hud-btn__label">Add Source</span></button>
-  </div>
-</div>
+      <article class="work-card" style="--t-color:#c9a769">
+        <div class="work-card__frame"><img src="assets/work/scary-movie.jpg" alt="Scary Movie" loading="lazy"></div>
+        <div class="work-card__body">
+          <p class="work-card__tag">Feature Film</p>
+          <h3>Scary Movie</h3>
+          <p class="work-card__meta">Mix Technician · 2026</p>
+        </div>
+      </article>
 
-<div class="concept-section">
-  <p class="concept-label">Work card — alternate style</p>
-  <div class="hud-card">
-    <div class="hud-card__tag">FEATURE FILM</div>
-    <h3>Scary Movie</h3>
-    <p class="hud-card__meta">MIX TECHNICIAN · 2026</p>
-  </div>
-</div>
+      <article class="work-card" style="--t-color:#5ec8e8">
+        <div class="work-card__frame"><img src="assets/work/teenage-sex-and-death-at-camp-miasma.jpg" alt="Teenage Sex and Death at Camp Miasma" loading="lazy"></div>
+        <div class="work-card__body">
+          <p class="work-card__tag">Feature Film</p>
+          <h3>Teenage Sex and Death at Camp Miasma</h3>
+          <p class="work-card__meta">Dialogue Editor · 2026</p>
+        </div>
+      </article>
 
-<footer class="concept-notes">
-  <h2>Design notes — v4</h2>
-  <ul>
-    <li><strong>Font:</strong> DM Serif Display is back for every heading (name, work card title, this heading) — same as the live site, paired with IBM Plex Mono for the technical/UI labels.</li>
-    <li><strong>Continuous scroll:</strong> the playhead is now fixed dead-center and never moves. The ruler and every track's waveform scroll right-to-left underneath it on a loop, in perfect sync — this is exactly how Pro Tools' "Continuous Scroll" playback mode looks, rather than a moving playhead over a static timeline.</li>
-    <li><strong>Dropped the per-clip filename labels and bounded clip boxes</strong> — with audio now flowing continuously past a fixed point, a single bounded "clip" no longer made sense. Tracks now just show raw scrolling waveform in their own color, closer to what continuous playback actually looks like.</li>
-    <li>Speed/density of the scroll and tick spacing are easy to tune once the direction feels right.</li>
-  </ul>
-</footer>
+      <article class="work-card" style="--t-color:#9b8fc9">
+        <div class="work-card__frame"><img src="assets/work/the-beast-in-me.jpg" alt="The Beast in Me" loading="lazy"></div>
+        <div class="work-card__body">
+          <p class="work-card__tag">Limited Series</p>
+          <h3>The Beast in Me</h3>
+          <p class="work-card__meta">Mix Technician · 2025</p>
+        </div>
+      </article>
+
+      <article class="work-card" style="--t-color:#6f9c96">
+        <div class="work-card__frame"><img src="assets/work/song-sung-blue.jpg" alt="Song Sung Blue" loading="lazy"></div>
+        <div class="work-card__body">
+          <p class="work-card__tag">Feature Film</p>
+          <h3>Song Sung Blue</h3>
+          <p class="work-card__meta">Mix Technician · 2025</p>
+        </div>
+      </article>
+
+      <article class="work-card" style="--t-color:#c97a69">
+        <div class="work-card__frame"><img src="assets/work/between-walls.jpg" alt="Between Walls" loading="lazy"></div>
+        <div class="work-card__body">
+          <p class="work-card__tag">TV Series</p>
+          <h3>Between Walls</h3>
+          <p class="work-card__meta">Dialogue Editor · 2025</p>
+        </div>
+      </article>
+
+      <article class="work-card" style="--t-color:#c9a769">
+        <div class="work-card__frame"><img src="assets/work/contraataque.jpg" alt="Contraataque" loading="lazy"></div>
+        <div class="work-card__body">
+          <p class="work-card__tag">Feature Film</p>
+          <h3>Contraataque</h3>
+          <p class="work-card__meta">Dialogue Editor · 2025</p>
+        </div>
+      </article>
+
+      <article class="work-card" style="--t-color:#5ec8e8">
+        <div class="work-card__frame"><img src="assets/work/la-maquina.jpg" alt="La Máquina" loading="lazy"></div>
+        <div class="work-card__body">
+          <p class="work-card__tag">Limited Series</p>
+          <h3>La Máquina</h3>
+          <p class="work-card__meta">Re-Recording Mix Assistant · 2024</p>
+        </div>
+      </article>
+
+      <article class="work-card" style="--t-color:#9b8fc9">
+        <div class="work-card__frame"><img src="assets/work/los-hijos-de-la-costa.jpg" alt="Los hijos de la costa" loading="lazy"></div>
+        <div class="work-card__body">
+          <p class="work-card__tag">Feature Film</p>
+          <h3>Los hijos de la costa</h3>
+          <p class="work-card__meta">Re-Recording Mix Assistant · 2024</p>
+        </div>
+      </article>
+
+      <article class="work-card" style="--t-color:#6f9c96">
+        <div class="work-card__frame"><img src="assets/work/ufo-factory.jpg" alt="UFO Factory" loading="lazy"></div>
+        <div class="work-card__body">
+          <p class="work-card__tag">TV Series</p>
+          <h3>UFO Factory</h3>
+          <p class="work-card__meta">ADR Assistant · 2024</p>
+        </div>
+      </article>
+
+      <article class="work-card" style="--t-color:#c97a69">
+        <div class="work-card__frame"><img src="assets/work/midnight-family.jpg" alt="Midnight Family" loading="lazy"></div>
+        <div class="work-card__body">
+          <p class="work-card__tag">Limited Series</p>
+          <h3>Midnight Family</h3>
+          <p class="work-card__meta">ADR Assistant · 2024</p>
+        </div>
+      </article>
+
+      <article class="work-card" style="--t-color:#c9a769">
+        <div class="work-card__frame"><img src="assets/work/muxes.jpg" alt="Muxes" loading="lazy"></div>
+        <div class="work-card__body">
+          <p class="work-card__tag">Documentary</p>
+          <h3>Muxes</h3>
+          <p class="work-card__meta">Foley Editor · 2022</p>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <h2>About</h2>
+    </div>
+    <div class="about-body">
+      <p class="about-lead">
+        My goal is to build soundscapes in service of the story. Mixing and
+        editing with focus on clarity and world building.
+      </p>
+      <div>
+        <p>
+          Based in New York City, I work across feature films, episodic
+          television, and documentaries, collaborating with directors,
+          editors, and producers from spotting sessions through final mix.
+          Comfortable delivering to theatrical, broadcast, and streaming
+          specifications, including 5.1 / 7.1 and immersive formats.
+        </p>
+        <ul class="about-skills">
+          <li>Re-recording & Final Mix</li>
+          <li>Dialogue & ADR Editing</li>
+          <li>Sound Effects & Foley Editing</li>
+          <li>5.1 / 7.1 / Dolby Atmos</li>
+          <li>Netflix & Broadcast Delivery Specs</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <h2>Let's work together!</h2>
+    </div>
+    <p>Available for feature, episodic, and documentary projects.</p>
+    <a class="contact__email" href="mailto:pedro97paz@gmail.com">pedro97paz@gmail.com</a>
+    <div class="contact__links">
+      <a href="https://www.imdb.com/name/nm14630376/" target="_blank" rel="noopener">IMDb</a>
+      <a href="https://www.linkedin.com/in/pedrofranciscopaz" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>Pedro Paz — Re-recording Mixer &amp; Sound Editor — Design Concept</p>
+  </footer>
+
+</main>
 
 <script>
-  // Ticking timecode readout
-  const clock = document.getElementById('clock');
-  let frames = 0;
-  setInterval(() => {
-    frames++;
-    const totalSeconds = Math.floor(frames / 24);
-    const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-    const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-    const s = String(totalSeconds % 60).padStart(2, '0');
-    const f = String(frames % 24).padStart(2, '0');
-    clock.textContent = `TC ${h}:${m}:${s}:${f}`;
-  }, 1000 / 24);
+  // ---------- Access gate ----------
+  const GATE_PASSWORD = 'pedro';
+  const GATE_STORAGE_KEY = 'ppc-gate-unlocked';
+  const gate = document.getElementById('gate');
+  const gateForm = document.getElementById('gateForm');
+  const gatePassword = document.getElementById('gatePassword');
+  const gateError = document.getElementById('gateError');
 
-  // Typewriter — runs once, then the cursor disappears (no lingering blink)
+  if (localStorage.getItem(GATE_STORAGE_KEY) === '1') {
+    gate.classList.add('is-unlocked');
+  } else {
+    gatePassword.focus();
+  }
+
+  gateForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (gatePassword.value.trim().toLowerCase() === GATE_PASSWORD) {
+      localStorage.setItem(GATE_STORAGE_KEY, '1');
+      gate.classList.add('is-unlocked');
+    } else {
+      gateError.textContent = 'Incorrect password — try again.';
+      gateForm.classList.remove('is-shake');
+      void gateForm.offsetWidth;
+      gateForm.classList.add('is-shake');
+      gatePassword.value = '';
+      gatePassword.focus();
+    }
+  });
+
+  // ---------- Nav menu ----------
+  const navToggle = document.getElementById('navToggle');
+  const navMenu = document.getElementById('navMenu');
+
+  navToggle.addEventListener('click', () => {
+    const isOpen = navMenu.classList.toggle('is-open');
+    navToggle.setAttribute('aria-expanded', isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  });
+
+  navMenu.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => {
+      navMenu.classList.remove('is-open');
+      navToggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    });
+  });
+
+  // ---------- Typewriter — runs once, then the cursor disappears ----------
   const ROLE_TEXT = 'Re-recording Mixer & Sound Editor';
   const roleEl = document.getElementById('roleText');
   const cursorEl = document.querySelector('.cursor');
@@ -584,8 +950,9 @@
   // Same visual language as the static tracks (rounded bars, same MIN_H/MAX_H
   // scale, same clip framing) but driven by real mic amplitude rather than a
   // precomputed pattern — so instead of a CSS-animated loop, a fixed set of
-  // bars gets redrawn each sample tick, with new data entering on the right
-  // and everything else shifting down a slot, same dynamic as the real site.
+  // bars gets redrawn each sample tick, with new data entering at the right
+  // edge of the clip and everything else shifting down a slot, matching the
+  // other tracks' right-to-left flow.
   const LIVE_BAR_COUNT = 90;
   const LIVE_VIEWBOX_W = 400;
   const LIVE_SAMPLE_INTERVAL = 70;
@@ -636,6 +1003,7 @@
     const svg = document.createElementNS(NS, 'svg');
     svg.classList.add('lane-svg');
     svg.setAttribute('viewBox', `0 0 ${LIVE_VIEWBOX_W} 40`);
+    svg.setAttribute('width', '100%');
     svg.setAttribute('preserveAspectRatio', 'none');
 
     const slot = LIVE_VIEWBOX_W / LIVE_BAR_COUNT;
