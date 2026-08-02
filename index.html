@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Design Concept — Console v4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0a;
+    --fg: #f2efe9;
+    --fg-dim: #a8a49a;
+    --fg-faint: #6e6a60;
+    --accent: #c9a769;
+    --rec: #c97a69;
+    --line: rgba(242, 239, 233, 0.12);
+  }
+
+  html, body { background: var(--bg); }
+
+  body {
+    color: var(--fg);
+    font-family: 'DM Serif Display', serif;
+    overflow-x: hidden;
+  }
+
+  /* Session animation keeps the technical/mono voice — everything else
+     switches to the site's serif */
+  .session, .session * {
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .hud-frame {
+    max-width: 1000px;
+    margin: 4vh auto 0;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    border: 1px solid var(--line);
+  }
+
+  .hud-topline {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--fg-dim);
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 3rem;
+  }
+
+  .hud-topline .hud-tag { color: var(--accent); }
+
+  /* Monospace only — ticking digits need fixed-width glyphs or the whole
+     readout shifts as it updates 24x/sec */
+  #clock {
+    font-family: 'IBM Plex Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hud-center {
+    text-align: center;
+    padding: 0 0 3rem;
+  }
+
+  .hud-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 1.75rem;
+  }
+
+  .hud-name {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: clamp(2.75rem, 9vw, 6.5rem);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  .hud-role {
+    margin-top: 1.75rem;
+    min-height: 1.4em;
+    font-size: clamp(0.85rem, 1.6vw, 1rem);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 0.5em;
+    height: 1em;
+    background: var(--accent);
+    margin-left: 0.15em;
+    vertical-align: text-bottom;
+    animation: blink 0.9s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  /* ---------- Session (Pro Tools-style continuous scroll) ---------- */
+  .session {
+    position: relative;
+    border: 1px solid var(--line);
+    margin-bottom: 2rem;
+  }
+
+  .session__row {
+    display: flex;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .session__row:last-of-type { border-bottom: none; }
+
+  .session__head, .session__ruler-spacer {
+    width: 132px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    color: var(--fg-dim);
+    z-index: 1;
+    background: var(--bg);
+  }
+
+  .session__ruler-spacer {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--fg-faint);
+  }
+
+  .session__track { border-left: 3px solid var(--t-color, var(--accent)); }
+  .session__track .session__head { border-left: none; }
+
+  /* Live Input track: expands open from the top edge, collapses shut on removal */
+  .session__row--live {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    border-bottom-color: transparent;
+    transition: max-height 0.45s ease, opacity 0.35s ease, border-color 0.45s ease;
+  }
+
+  .session__row--live.is-in {
+    max-height: 64px;
+    opacity: 1;
+    border-bottom-color: var(--line);
+  }
+
+  .session__ms {
+    display: flex;
+    gap: 3px;
+    margin-left: auto;
+  }
+
+  .session__ms b {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 13px;
+    border: 1px solid var(--line);
+    font-size: 0.55rem;
+    font-weight: 400;
+    color: var(--fg-faint);
+  }
+
+  .session__lane, .session__ruler-ticks {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .session__lane { height: 52px; padding: 6px 8px; }
+  .session__ruler-ticks { height: 30px; }
+
+  .session__clip {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 4px;
+    border: 2px solid var(--t-color, var(--accent));
+    background: color-mix(in srgb, var(--t-color, var(--accent)) 16%, transparent);
+  }
+
+  .scroll-strip {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    animation: scrollLeft 30s linear infinite;
+  }
+
+  @keyframes scrollLeft {
+    from { transform: translateX(0); }
+    to { transform: translateX(-1800px); }
+  }
+
+  .ruler-label {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    font-size: 0.6rem;
+    color: var(--fg-faint);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+
+  .lane-svg { display: block; height: 100%; }
+
+  .session__playhead-track {
+    position: absolute;
+    left: 132px;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .session__playhead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1.5px;
+    background: var(--fg);
+  }
+
+  .session__playhead::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -3.5px;
+    width: 0;
+    height: 0;
+    border-left: 3.5px solid transparent;
+    border-right: 3.5px solid transparent;
+    border-top: 5px solid var(--fg);
+  }
+
+  .session__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--fg-dim);
+    padding: 0.9rem 1.1rem;
+    border: 1px solid var(--line);
+    border-top: none;
+    margin-top: -2rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+
+  .session__meta .rec { color: var(--rec); }
+  .session__meta .rec::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--rec);
+    margin-right: 0.4em;
+    animation: blink 1.2s step-end infinite;
+  }
+
+  .hud-btn-wrap { text-align: center; }
+
+  .hud-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    padding: 0.9rem 1.75rem;
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+
+  .hud-btn__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.6;
+  }
+
+  .hud-btn:hover { background: var(--accent); color: var(--bg); }
+
+  .hud-btn.is-live { border-color: var(--rec); color: var(--rec); }
+  .hud-btn.is-live:hover { background: var(--rec); color: var(--bg); }
+
+  .hud-btn.is-denied { border-color: var(--rec); color: var(--rec); }
+
+  /* Work card concept */
+  .concept-section {
+    max-width: 1000px;
+    margin: 6vh auto 0;
+    padding: 0 clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .concept-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--fg-faint);
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+  }
+
+  .hud-card {
+    width: 280px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 1.25rem;
+  }
+
+  .hud-card__tag {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 2.5rem;
+  }
+
+  .hud-card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .hud-card__meta {
+    font-size: 0.7rem;
+    color: var(--fg-dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* Notes footer */
+  .concept-notes {
+    max-width: 1000px;
+    margin: 8vh auto 6vh;
+    padding: 2rem clamp(1.5rem, 4vw, 3rem);
+    border-top: 1px solid var(--line);
+  }
+
+  .concept-notes h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    color: var(--accent);
+    margin-bottom: 1.25rem;
+  }
+
+  .concept-notes ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--fg-dim);
+    max-width: 720px;
+  }
+
+  .concept-notes strong { color: var(--fg); }
+
+  @media (max-width: 640px) {
+    .session__head, .session__ruler-spacer { width: 92px; padding: 0 0.5rem; }
+    .session__playhead-track { left: 92px; }
+    .session__ms { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hud-frame">
+  <div class="hud-topline">
+    <span class="hud-tag">PEDRO PAZ // AUDIO POST</span>
+    <span id="clock">TC 00:00:00:00</span>
+  </div>
+
+  <div class="hud-center">
+    <p class="hud-eyebrow">// FILM · TELEVISION · DOCUMENTARY</p>
+    <h1 class="hud-name">Pedro Paz</h1>
+    <p class="hud-role"><span id="roleText"></span><span class="cursor"></span></p>
+  </div>
+
+  <div class="session" id="session">
+    <div class="session__row">
+      <div class="session__ruler-spacer">SESSION</div>
+      <div class="session__ruler-ticks" id="rulerLane"></div>
+    </div>
+    <div class="session__playhead-track"><div class="session__playhead"></div></div>
+  </div>
+
+  <div class="session__meta">
+    <span>CH 2</span>
+    <span>48kHz / 24bit</span>
+    <span>-18.4 LUFS</span>
+    <span class="rec">REC</span>
+  </div>
+
+  <div class="hud-btn-wrap">
+    <button class="hud-btn" id="sourceBtn"><span class="hud-btn__dot"></span><span class="hud-btn__label">Add Source</span></button>
+  </div>
+</div>
+
+<div class="concept-section">
+  <p class="concept-label">Work card — alternate style</p>
+  <div class="hud-card">
+    <div class="hud-card__tag">FEATURE FILM</div>
+    <h3>Scary Movie</h3>
+    <p class="hud-card__meta">MIX TECHNICIAN · 2026</p>
+  </div>
+</div>
+
+<footer class="concept-notes">
+  <h2>Design notes — v4</h2>
+  <ul>
+    <li><strong>Font:</strong> DM Serif Display is back for every heading (name, work card title, this heading) — same as the live site, paired with IBM Plex Mono for the technical/UI labels.</li>
+    <li><strong>Continuous scroll:</strong> the playhead is now fixed dead-center and never moves. The ruler and every track's waveform scroll right-to-left underneath it on a loop, in perfect sync — this is exactly how Pro Tools' "Continuous Scroll" playback mode looks, rather than a moving playhead over a static timeline.</li>
+    <li><strong>Dropped the per-clip filename labels and bounded clip boxes</strong> — with audio now flowing continuously past a fixed point, a single bounded "clip" no longer made sense. Tracks now just show raw scrolling waveform in their own color, closer to what continuous playback actually looks like.</li>
+    <li>Speed/density of the scroll and tick spacing are easy to tune once the direction feels right.</li>
+  </ul>
+</footer>
+
+<script>
+  // Ticking timecode readout
+  const clock = document.getElementById('clock');
+  let frames = 0;
+  setInterval(() => {
+    frames++;
+    const totalSeconds = Math.floor(frames / 24);
+    const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+    const s = String(totalSeconds % 60).padStart(2, '0');
+    const f = String(frames % 24).padStart(2, '0');
+    clock.textContent = `TC ${h}:${m}:${s}:${f}`;
+  }, 1000 / 24);
+
+  // Typewriter — runs once, then the cursor disappears (no lingering blink)
+  const ROLE_TEXT = 'Re-recording Mixer & Sound Editor';
+  const roleEl = document.getElementById('roleText');
+  const cursorEl = document.querySelector('.cursor');
+  let charIndex = 0;
+  function typeTick() {
+    charIndex++;
+    roleEl.textContent = ROLE_TEXT.slice(0, charIndex);
+    if (charIndex < ROLE_TEXT.length) {
+      setTimeout(typeTick, 45);
+    } else {
+      cursorEl.remove();
+    }
+  }
+  typeTick();
+
+  // ---------- Continuous-scroll session ----------
+  const NS = 'http://www.w3.org/2000/svg';
+  const PATTERN_W = 1800; // px covered by one loop cycle
+  const TOTAL_W = PATTERN_W * 2; // duplicated for a seamless loop
+  const TICK_SPACING = 180; // px between timecode marks (= 5s apart)
+
+  function formatTime(totalSeconds) {
+    const m = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+    const s = String(totalSeconds % 60).padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  // Ruler: fixed-interval labels, repeating every PATTERN_W so the loop is seamless
+  const rulerLane = document.getElementById('rulerLane');
+  const rulerStrip = document.createElement('div');
+  rulerStrip.className = 'scroll-strip';
+  rulerStrip.style.width = TOTAL_W + 'px';
+  const tickCount = Math.ceil(TOTAL_W / TICK_SPACING);
+  for (let i = 0; i < tickCount; i++) {
+    const label = document.createElement('span');
+    label.className = 'ruler-label';
+    label.style.left = (i * TICK_SPACING) + 'px';
+    label.textContent = formatTime((i % (PATTERN_W / TICK_SPACING)) * 5);
+    rulerStrip.appendChild(label);
+  }
+  rulerLane.appendChild(rulerStrip);
+
+  // Tracks: deterministic (position-based, not random) waveform so the
+  // pattern repeats exactly every PATTERN_W px — required for a seamless loop.
+  const TRACKS = [
+    { name: 'DX — LAV 1', color: '#c9a769', seed: 1.1 },
+    { name: 'FOL — FOOTSTEPS', color: '#5ec8e8', seed: 5.7 },
+    { name: 'MX — SCORE', color: '#9b8fc9', seed: 8.2 },
+    { name: 'FX — AMBIENCE', color: '#6f9c96', seed: 3.4 },
+  ];
+
+  const LIVE_COLOR = '#c97a69'; // the FOL track's old color, reused for Live Input
+
+  // Returns 0..1. A slow phrase-level envelope (raised to a power, so it
+  // spends more time near its extremes) sets loud/quiet passages, a mid
+  // wave shapes each phrase, and a fast wave adds bar-to-bar jitter —
+  // together giving real peaks and near-silence instead of a mid-range hum.
+  function amplitudeAt(xp, seed) {
+    const slow = Math.sin(xp * 0.006 + seed) * 0.5 + 0.5;
+    const mid = Math.sin(xp * 0.028 + seed * 2) * 0.5 + 0.5;
+    const fast = Math.sin(xp * 0.16 + seed * 5) * 0.5 + 0.5;
+    const envelope = Math.pow(slow, 1.8) * (0.4 + 0.6 * mid);
+    return Math.min(1, envelope * (0.5 + 0.5 * fast));
+  }
+
+  const MIN_H = 1.5;
+  const MAX_H = 34;
+
+  const session = document.getElementById('session');
+  const playheadTrack = document.querySelector('.session__playhead-track');
+  const BAR_STEP = 9;
+
+  TRACKS.forEach((track) => {
+    const row = document.createElement('div');
+    row.className = 'session__row session__track';
+    row.style.setProperty('--t-color', track.color);
+
+    const head = document.createElement('div');
+    head.className = 'session__head';
+    head.innerHTML = `<span>${track.name}</span><span class="session__ms"><b>M</b><b>S</b></span>`;
+
+    const lane = document.createElement('div');
+    lane.className = 'session__lane';
+
+    const clip = document.createElement('div');
+    clip.className = 'session__clip';
+    clip.style.setProperty('--t-color', track.color);
+
+    const strip = document.createElement('div');
+    strip.className = 'scroll-strip';
+    strip.style.width = TOTAL_W + 'px';
+
+    const svg = document.createElementNS(NS, 'svg');
+    svg.classList.add('lane-svg');
+    svg.setAttribute('viewBox', `0 0 ${TOTAL_W} 40`);
+    svg.setAttribute('width', TOTAL_W);
+    svg.setAttribute('preserveAspectRatio', 'none');
+
+    const barWidth = BAR_STEP * 0.45;
+
+    for (let x = 0; x < TOTAL_W; x += BAR_STEP) {
+      const xp = x % PATTERN_W;
+      const amp = amplitudeAt(xp, track.seed);
+      const h = MIN_H + amp * MAX_H;
+      const rect = document.createElementNS(NS, 'rect');
+      rect.setAttribute('x', x.toFixed(1));
+      rect.setAttribute('width', barWidth.toFixed(1));
+      rect.setAttribute('height', h.toFixed(1));
+      rect.setAttribute('y', (20 - h / 2).toFixed(1));
+      rect.setAttribute('rx', (barWidth / 2).toFixed(1));
+      rect.setAttribute('fill', track.color);
+      rect.setAttribute('opacity', (0.4 + amp * 0.6).toFixed(2));
+      svg.appendChild(rect);
+    }
+
+    strip.appendChild(svg);
+    clip.appendChild(strip);
+    lane.appendChild(clip);
+    row.appendChild(head);
+    row.appendChild(lane);
+    session.insertBefore(row, playheadTrack);
+  });
+
+  // ---------- Live Input: mic-reactive track ----------
+  // Same visual language as the static tracks (rounded bars, same MIN_H/MAX_H
+  // scale, same clip framing) but driven by real mic amplitude rather than a
+  // precomputed pattern — so instead of a CSS-animated loop, a fixed set of
+  // bars gets redrawn each sample tick, with new data entering on the right
+  // and everything else shifting down a slot, same dynamic as the real site.
+  const LIVE_BAR_COUNT = 90;
+  const LIVE_VIEWBOX_W = 400;
+  const LIVE_SAMPLE_INTERVAL = 70;
+  const LIVE_MIN = 0.03;
+
+  const mic = {
+    isActive: false,
+    analyser: null,
+    timeData: null,
+    stream: null,
+    audioCtx: null,
+    getLevel() {
+      this.analyser.getByteTimeDomainData(this.timeData);
+      let sumSquares = 0;
+      for (let i = 0; i < this.timeData.length; i++) {
+        const v = (this.timeData[i] - 128) / 128;
+        sumSquares += v * v;
+      }
+      const rms = Math.sqrt(sumSquares / this.timeData.length);
+      return Math.min(1, rms * 5.5);
+    },
+  };
+
+  const sourceBtn = document.getElementById('sourceBtn');
+  const sourceLabel = sourceBtn.querySelector('.hud-btn__label');
+  let liveRow = null;
+  let liveBars = null;
+  let liveHistory = null;
+  let liveFrameHandle = null;
+  let sourceBusy = false;
+
+  function buildLiveRow() {
+    const row = document.createElement('div');
+    row.className = 'session__row session__track session__row--live';
+    row.style.setProperty('--t-color', LIVE_COLOR);
+
+    const head = document.createElement('div');
+    head.className = 'session__head';
+    head.innerHTML = '<span>LIVE INPUT</span><span class="session__ms"><b>M</b><b>S</b></span>';
+
+    const lane = document.createElement('div');
+    lane.className = 'session__lane';
+
+    const clip = document.createElement('div');
+    clip.className = 'session__clip';
+    clip.style.setProperty('--t-color', LIVE_COLOR);
+
+    const svg = document.createElementNS(NS, 'svg');
+    svg.classList.add('lane-svg');
+    svg.setAttribute('viewBox', `0 0 ${LIVE_VIEWBOX_W} 40`);
+    svg.setAttribute('preserveAspectRatio', 'none');
+
+    const slot = LIVE_VIEWBOX_W / LIVE_BAR_COUNT;
+    const barWidth = slot * 0.45;
+    const bars = [];
+    for (let i = 0; i < LIVE_BAR_COUNT; i++) {
+      const rect = document.createElementNS(NS, 'rect');
+      rect.setAttribute('x', (i * slot).toFixed(1));
+      rect.setAttribute('width', barWidth.toFixed(1));
+      rect.setAttribute('rx', (barWidth / 2).toFixed(1));
+      rect.setAttribute('fill', LIVE_COLOR);
+      svg.appendChild(rect);
+      bars.push(rect);
+    }
+
+    clip.appendChild(svg);
+    lane.appendChild(clip);
+    row.appendChild(head);
+    row.appendChild(lane);
+
+    return { row, bars };
+  }
+
+  function drawLiveBars() {
+    for (let i = 0; i < LIVE_BAR_COUNT; i++) {
+      const amp = liveHistory[i];
+      const h = MIN_H + amp * MAX_H;
+      liveBars[i].setAttribute('height', h.toFixed(1));
+      liveBars[i].setAttribute('y', (20 - h / 2).toFixed(1));
+      liveBars[i].setAttribute('opacity', (0.4 + amp * 0.6).toFixed(2));
+    }
+  }
+
+  function liveTick(t, lastTick) {
+    if (!mic.isActive) return;
+    if (t - lastTick >= LIVE_SAMPLE_INTERVAL) {
+      liveHistory.shift();
+      liveHistory.push(Math.max(LIVE_MIN, Math.min(1, mic.getLevel())));
+      drawLiveBars();
+      lastTick = t;
+    }
+    liveFrameHandle = requestAnimationFrame((t2) => liveTick(t2, lastTick));
+  }
+
+  function flashDenied(label) {
+    const original = 'Add Source';
+    sourceBtn.classList.add('is-denied');
+    sourceLabel.textContent = label;
+    setTimeout(() => {
+      sourceBtn.classList.remove('is-denied');
+      sourceLabel.textContent = original;
+    }, 2600);
+  }
+
+  async function addSource() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      flashDenied('Not supported');
+      return;
+    }
+    sourceBusy = true;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const audioCtx = new AudioCtx();
+      const source = audioCtx.createMediaStreamSource(stream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+
+      mic.stream = stream;
+      mic.audioCtx = audioCtx;
+      mic.analyser = analyser;
+      mic.timeData = new Uint8Array(analyser.fftSize);
+      mic.isActive = true;
+
+      const built = buildLiveRow();
+      liveRow = built.row;
+      liveBars = built.bars;
+      liveHistory = new Array(LIVE_BAR_COUNT).fill(LIVE_MIN);
+      session.insertBefore(liveRow, playheadTrack);
+      // Expand open on the next frame so the transition actually plays
+      requestAnimationFrame(() => requestAnimationFrame(() => liveRow.classList.add('is-in')));
+
+      liveFrameHandle = requestAnimationFrame((t) => liveTick(t, t));
+
+      sourceBtn.classList.add('is-live');
+      sourceLabel.textContent = 'Remove Source';
+    } catch (err) {
+      flashDenied('Mic unavailable');
+    } finally {
+      sourceBusy = false;
+    }
+  }
+
+  function removeSource() {
+    mic.isActive = false;
+    if (mic.stream) mic.stream.getTracks().forEach((track) => track.stop());
+    if (mic.audioCtx) mic.audioCtx.close();
+    mic.stream = null;
+    mic.audioCtx = null;
+    mic.analyser = null;
+    if (liveFrameHandle) cancelAnimationFrame(liveFrameHandle);
+
+    sourceBtn.classList.remove('is-live');
+    sourceLabel.textContent = 'Add Source';
+
+    if (liveRow) {
+      const rowToRemove = liveRow;
+      liveRow = null;
+      rowToRemove.classList.remove('is-in');
+      setTimeout(() => rowToRemove.remove(), 480);
+    }
+  }
+
+  sourceBtn.addEventListener('click', () => {
+    if (sourceBusy) return;
+    if (mic.isActive) {
+      removeSource();
+    } else {
+      addSource();
+    }
+  });
+</script>
+
+</body>
+</html>
