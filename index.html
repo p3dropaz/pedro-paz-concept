@@ -1510,6 +1510,7 @@
   const sourceLabel = sourceBtn.querySelector('.hud-btn__label');
   let liveRow = null;
   let liveBars = null;
+  let liveSvg = null;
   let liveHistory = null;
   let liveFrameHandle = null;
   let sourceBusy = false;
@@ -1553,7 +1554,7 @@
     row.appendChild(head);
     row.appendChild(lane);
 
-    return { row, bars };
+    return { row, bars, svg };
   }
 
   function drawLiveBars() {
@@ -1583,6 +1584,16 @@
     if (pushed) drawLiveBars();
     // Resync after a long stall so we don't spend many frames catching up.
     if (t - lastTick > LIVE_SAMPLE_INTERVAL * 8) lastTick = t;
+
+    // Data only shifts once per sample, which on its own reads as a chunky
+    // 9px jerk ~7x/sec — far more agitated than the other tracks even at the
+    // same mean speed. Glide the strip between samples so the motion is
+    // continuous: sits at +BAR_STEP right after a push and eases to 0 by the
+    // next one, exactly cancelling the discrete shift.
+    if (liveSvg) {
+      const frac = Math.min(1, Math.max(0, (t - lastTick) / LIVE_SAMPLE_INTERVAL));
+      liveSvg.style.transform = `translateX(${(BAR_STEP * (1 - frac)).toFixed(2)}px)`;
+    }
 
     liveFrameHandle = requestAnimationFrame((t2) => liveTick(t2, lastTick));
   }
@@ -1621,6 +1632,7 @@
       const built = buildLiveRow();
       liveRow = built.row;
       liveBars = built.bars;
+      liveSvg = built.svg;
       liveHistory = new Array(LIVE_BAR_COUNT).fill(LIVE_MIN);
       session.insertBefore(liveRow, playheadTrack);
       // Expand open on the next frame so the transition actually plays
@@ -1648,6 +1660,8 @@
 
     sourceBtn.classList.remove('is-live');
     sourceLabel.textContent = 'Add Source';
+
+    liveSvg = null;
 
     if (liveRow) {
       const rowToRemove = liveRow;
@@ -1923,7 +1937,7 @@
     gain.gain.value = 0;
 
     const analyser = ctx.createAnalyser();
-    analyser.fftSize = 128;
+    analyser.fftSize = 2048; // fine bins so narrow-band recordings still fill the visualizer
 
     source.connect(gain);
     gain.connect(analyser);
@@ -1955,7 +1969,7 @@
     gain.gain.value = 0;
 
     const analyser = ctx.createAnalyser();
-    analyser.fftSize = 128;
+    analyser.fftSize = 2048; // fine bins so narrow-band recordings still fill the visualizer
 
     noise.connect(filter).connect(gain);
     gain.connect(analyser);
@@ -2025,18 +2039,99 @@
     });
   }
 
+  // A linear bar-to-spectrum mapping makes the visualizer slump left-to-right,
+  // because natural sound carries its energy in the low bins. It's worse here
+  // because each recording is lowpassed at a different point (Riverside dies
+  // at ~4kHz, Lower East Side at ~9kHz), so any fixed ceiling leaves the right
+  // side mapped to dead, empty bands. Evening it out:
+  //   1. find each recording's actual top frequency at runtime and map only
+  //      up to there, so no bar is ever assigned a silent band
+  //   2. spread bands on a power curve, giving bass a fair share of the width
+  //      rather than the whole left half
+  //   3. per-band auto-gain — each bar scales to its OWN recent peak, which is
+  //      what actually produces even thickness across the full width
+  //   4. a global gate so silence reads as flat rather than amplified noise
   function startWaveLoop() {
     const data = new Uint8Array(waveAnalyser.frequencyBinCount);
+    const n = waveBars.length;
+    const minBin = 1;
+
+    const edges = new Array(n + 1);
+    let topBin = 0;
+
+    function rebuildEdges(maxBin) {
+      topBin = maxBin;
+      const span = maxBin - minBin;
+      for (let i = 0; i <= n; i++) {
+        edges[i] = Math.round(minBin + span * Math.pow(i / n, 2.0));
+      }
+    }
+    rebuildEdges(Math.min(data.length - 1, Math.round(data.length * 0.4)));
+
+    const smoothed = new Array(n).fill(0);
+    const raw = new Array(n).fill(0);
+    const bandPeak = new Array(n).fill(0.04);
+    let frameCount = 0;
+    let topSmooth = 0;
+
     function tick() {
       if (!waveAnalyser || !waveBars) return;
       waveAnalyser.getByteFrequencyData(data);
-      waveBars.forEach((bar, i) => {
-        const idx = Math.floor((i / waveBars.length) * data.length);
-        const level = data[idx] / 255;
-        const h = Math.max(2, level * 48);
-        bar.setAttribute('height', h.toFixed(1));
-        bar.setAttribute('y', (28 - h / 2).toFixed(1));
-      });
+
+      // Re-measure the content's usable bandwidth periodically and retune the
+      // band edges, so every recording fills the width regardless of how it
+      // was encoded. The threshold is relative to the current frame's peak
+      // (an absolute one latches onto sparse transients in quiet recordings)
+      // and the result is smoothed so the layout doesn't jitter.
+      if (frameCount++ % 15 === 0) {
+        let frameByteMax = 0;
+        for (let b = minBin; b < data.length; b++) {
+          if (data[b] > frameByteMax) frameByteMax = data[b];
+        }
+        const thresh = Math.max(8, frameByteMax * 0.06);
+        let hi = minBin;
+        for (let b = data.length - 1; b > minBin; b--) {
+          if (data[b] > thresh) { hi = b; break; }
+        }
+        if (hi > minBin + 8) {
+          topSmooth = topSmooth ? topSmooth * 0.75 + hi * 0.25 : hi;
+          const t = Math.round(topSmooth);
+          if (Math.abs(t - topBin) > topBin * 0.08) rebuildEdges(t);
+        }
+      }
+
+      let frameMax = 0;
+      for (let i = 0; i < n; i++) {
+        const lo = edges[i];
+        const hi = Math.max(edges[i + 1], lo + 1);
+        let sum = 0;
+        let count = 0;
+        for (let b = lo; b < hi && b < data.length; b++) {
+          sum += data[b];
+          count++;
+        }
+        const v = count ? (sum / count) / 255 : 0;
+        raw[i] = v;
+        if (v > frameMax) frameMax = v;
+      }
+
+      // Quiet overall -> close the gate so we don't amplify near-silence.
+      const gate = Math.min(1, frameMax / 0.05);
+
+      for (let i = 0; i < n; i++) {
+        // Each band tracks its own decaying peak, so a naturally quiet high
+        // band still uses the full height instead of flatlining.
+        bandPeak[i] = Math.max(raw[i], bandPeak[i] * 0.988);
+        const ratio = Math.min(1, raw[i] / Math.max(bandPeak[i], 0.008));
+        // Gamma lift: high bands are more intermittent than low ones, so their
+        // peaks reach full height but their average would sit much lower. This
+        // pulls mid-level values up and evens the field out across the width.
+        const target = Math.pow(ratio, 0.55) * gate;
+        smoothed[i] += (target - smoothed[i]) * 0.33;
+        const h = Math.max(2, smoothed[i] * 46);
+        waveBars[i].setAttribute('height', h.toFixed(1));
+        waveBars[i].setAttribute('y', (28 - h / 2).toFixed(1));
+      }
       waveFrameHandle = requestAnimationFrame(tick);
     }
     waveFrameHandle = requestAnimationFrame(tick);
