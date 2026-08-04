@@ -360,6 +360,10 @@
 
   .lane-svg { display: block; height: 100%; }
 
+  /* Wider than the lane and pinned right: newest sample sits at the right
+     edge, older bars run off the left and get clipped. */
+  .lane-svg--live { position: absolute; top: 0; right: 0; }
+
   .session__playhead-track {
     position: absolute;
     left: 132px;
@@ -662,7 +666,7 @@
     /* Matches the SVG viewBox exactly so preserveAspectRatio never
        letterboxes — otherwise the % positioned HTML pins drift out of
        sync with the actual rendered map content. */
-    aspect-ratio: 185 / 727;
+    aspect-ratio: 366 / 761;
     border: 1px solid var(--line);
     background: #0d0b08;
     overflow: hidden;
@@ -899,6 +903,32 @@
     align-items: start;
   }
 
+  .about-intro {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .about-photo {
+    width: clamp(150px, 20vw, 210px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+
+  /* Square source, square frame. The head sits at ~42% x / ~54% y of the
+     source, so scale up for a portrait crop then translate to bring that
+     point to the middle of the circle — keeps hair and chin inside. */
+  .about-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: translate(11%, -1%) scale(1.35);
+  }
+
   .about-lead { font-size: clamp(1.15rem, 2.2vw, 1.5rem); }
   .about-body p:not(.about-lead) { color: var(--fg-dim); margin-top: 1.25rem; font-size: 0.95rem; }
 
@@ -967,6 +997,14 @@
     .session__playhead-track { left: 92px; }
     .session__ms { display: none; }
     .credits-screen { height: clamp(480px, 85vh, 640px); }
+    /* Keep the readout on a single line at narrow widths */
+    .session__meta {
+      flex-wrap: nowrap;
+      gap: 0.75rem;
+      font-size: 0.6rem;
+      padding: 0.8rem 0.75rem;
+      white-space: nowrap;
+    }
   }
 </style>
 </head>
@@ -1015,7 +1053,6 @@
       </div>
 
       <div class="session__meta">
-        <span>CH 2</span>
         <span>48kHz / 24bit</span>
         <span>-18.4 LUFS</span>
         <span class="rec">REC</span>
@@ -1032,7 +1069,6 @@
       <span class="section-num">01</span>
       <h2>Credits</h2>
     </div>
-    <p class="credits-hint">// CREDITS ROLLING — CLICK A TITLE TO VIEW THE FULL STILL</p>
     <div class="credits-screen" id="creditsScreen">
       <div class="credits-roll" id="creditsRoll"></div>
     </div>
@@ -1046,52 +1082,64 @@
     <p class="credits-hint">// CLICK A PIN TO PLAY A FIELD RECORDING</p>
 
     <div class="soundmap-canvas">
-      <svg class="soundmap-svg" viewBox="52 -5 185 727" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <svg class="soundmap-svg" viewBox="-8 -8 366 761" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
         <defs>
-          <pattern id="mapGrid" width="16" height="6" patternUnits="userSpaceOnUse">
-            <line x1="0" y1="0" x2="0" y2="6" stroke="#c9a769" stroke-width="0.5" stroke-opacity="0.4"/>
-            <line x1="0" y1="0" x2="16" y2="0" stroke="#c9a769" stroke-width="0.35" stroke-opacity="0.22"/>
+          <!-- Grid tilted to the island's ~21° axis, so "avenues" run its
+               length and "streets" cross it, as in the reference. -->
+          <pattern id="mapGrid" width="15" height="5.5" patternUnits="userSpaceOnUse" patternTransform="rotate(21)">
+            <line x1="0" y1="0" x2="0" y2="5.5" stroke="#c9a769" stroke-width="0.5" stroke-opacity="0.4"/>
+            <line x1="0" y1="0" x2="15" y2="0" stroke="#c9a769" stroke-width="0.35" stroke-opacity="0.22"/>
           </pattern>
           <clipPath id="islandClip">
             <use href="#islandPath"/>
           </clipPath>
         </defs>
 
-        <path id="islandPath" class="soundmap-island" d="M172,10
-          C185,25 195,42 195,60
-          C195,80 182,90 178,105
-          C174,120 190,135 200,150
-          C208,180 206,220 205,260
-          C204,310 200,345 195,380
-          C191,410 189,445 185,470
-          C180,500 175,530 168,560
-          C158,595 145,625 128,650
-          C118,662 105,648 100,630
-          C95,610 90,575 85,540
-          C80,495 79,460 78,420
-          C77,378 81,330 85,290
-          C89,250 80,215 95,180
-          C105,155 100,120 110,90
-          C118,65 125,45 140,30
-          C150,20 162,12 172,10 Z" />
+        <!-- Traced from the reference: Inwood tip top-right, NE shoulder,
+             narrow waist, Harlem/UES bulge east, long SW taper to Battery. -->
+        <path id="islandPath" class="soundmap-island" d="M308,6
+          C320,16 336,34 344,52
+          C346,64 334,78 322,92
+          C312,106 300,126 292,148
+          C284,172 276,204 268,242
+          C272,268 284,294 294,318
+          C300,332 303,342 302,354
+          C300,370 292,384 284,400
+          C274,418 262,434 250,454
+          C236,476 222,500 208,524
+          C194,548 178,572 162,596
+          C147,620 132,642 116,664
+          C100,684 84,702 66,718
+          C52,730 36,740 20,741
+          C10,736 1,723 3,706
+          C6,688 14,672 24,654
+          C34,634 44,612 54,590
+          C64,567 74,544 84,522
+          C94,498 104,474 114,450
+          C124,426 134,402 145,378
+          C156,352 167,326 178,300
+          C189,274 200,248 212,222
+          C224,194 236,166 248,140
+          C260,114 272,88 285,62
+          C293,42 300,22 308,6 Z" />
 
-        <path class="soundmap-island soundmap-island--gov" d="M108,672 C120,668 130,678 128,692 C126,706 112,712 100,704 C90,697 94,678 108,672 Z" />
 
         <g clip-path="url(#islandClip)">
-          <rect x="0" y="0" width="300" height="730" fill="url(#mapGrid)"></rect>
-          <path class="soundmap-arterial" d="M168,25 C140,110 108,200 112,300 C115,380 128,430 138,520 C146,580 150,610 145,645" />
-          <path class="soundmap-arterial soundmap-arterial--cross" d="M85,175 L200,165" />
-          <path class="soundmap-arterial soundmap-arterial--cross" d="M82,400 L200,390" />
-          <path class="soundmap-arterial soundmap-arterial--cross" d="M92,560 L178,548" />
+          <rect x="-20" y="-20" width="400" height="800" fill="url(#mapGrid)"></rect>
+          <path class="soundmap-arterial" d="M295,40 C262,150 200,300 158,470 C120,610 80,690 40,730" />
+          <path class="soundmap-arterial soundmap-arterial--cross" d="M186,282 L280,318" />
+          <path class="soundmap-arterial soundmap-arterial--cross" d="M102,478 L214,522" />
+          <path class="soundmap-arterial soundmap-arterial--cross" d="M31,634 L115,666" />
         </g>
 
-        <rect class="soundmap-park" id="soundmapParkRect" x="126" y="215" width="56" height="150" rx="2"></rect>
+        <!-- Rotated to sit square with the tilted street grid -->
+        <rect class="soundmap-park" id="soundmapParkRect" x="181" y="345" width="38" height="132" rx="2" transform="rotate(21 200 411)"></rect>
 
-        <text class="soundmap-park-label" id="soundmapParkLabel" x="154" y="294" text-anchor="middle">CENTRAL PARK</text>
-        <text class="soundmap-area-label" id="labelRiverside" x="90" y="220">RIVERSIDE PARK</text>
-        <text class="soundmap-area-label" id="labelLincoln" x="90" y="395">LINCOLN SQUARE</text>
-        <text class="soundmap-area-label" id="labelVillage" x="90" y="560">WEST VILLAGE</text>
-        <text class="soundmap-area-label" id="labelLES" x="180" y="540">LOWER EAST SIDE</text>
+        <text class="soundmap-area-label" id="soundmapParkLabel" x="286" y="416">CENTRAL PARK</text>
+        <text class="soundmap-area-label" id="labelRiverside" x="148" y="358" text-anchor="end">RIVERSIDE PARK</text>
+        <text class="soundmap-area-label" id="labelLincoln" x="96" y="485" text-anchor="end">LINCOLN SQUARE</text>
+        <text class="soundmap-area-label" id="labelVillage" x="38" y="616" text-anchor="end">WEST VILLAGE</text>
+        <text class="soundmap-area-label" id="labelLES" x="133" y="661">LOWER EAST SIDE</text>
       </svg>
       <div class="soundmap-pins" id="soundmapPins"></div>
     </div>
@@ -1112,10 +1160,15 @@
       <h2>About</h2>
     </div>
     <div class="about-body">
-      <p class="about-lead">
-        My goal is to build soundscapes in service of the story. Mixing and
-        editing with focus on clarity and world building.
-      </p>
+      <div class="about-intro">
+        <div class="about-photo">
+          <img src="assets/profile.jpg" alt="Pedro Paz" loading="lazy">
+        </div>
+        <p class="about-lead">
+          My goal is to build soundscapes in service of the story. Mixing and
+          editing with focus on clarity and world building.
+        </p>
+      </div>
       <div>
         <p>
           Based in New York City, I work across feature films, episodic
@@ -1149,7 +1202,7 @@
   </section>
 
   <footer class="footer">
-    <p>Pedro Paz — Re-recording Mixer &amp; Sound Editor — Design Concept</p>
+    <p>Pedro Paz — Re-recording Mixer &amp; Sound Editor</p>
   </footer>
 
 </main>
@@ -1420,8 +1473,12 @@
   // bars gets redrawn each sample tick, with new data entering at the right
   // edge of the clip and everything else shifting down a slot, matching the
   // other tracks' right-to-left flow.
-  const LIVE_BAR_COUNT = 90;
-  const LIVE_VIEWBOX_W = 400;
+  // Rendered at x-scale 1.0 (width attribute == viewBox width) using the same
+  // BAR_STEP/bar width as the static tracks, so bar pitch and the rounded caps
+  // match exactly. The strip is wider than the lane and anchored right, so the
+  // newest sample sits at the right edge and older bars scroll off the left.
+  const LIVE_STRIP_W = 1200;
+  const LIVE_BAR_COUNT = Math.floor(LIVE_STRIP_W / BAR_STEP);
   const LIVE_SAMPLE_INTERVAL = 70;
   const LIVE_MIN = 0.03;
 
@@ -1468,17 +1525,16 @@
     clip.style.setProperty('--t-color', LIVE_COLOR);
 
     const svg = document.createElementNS(NS, 'svg');
-    svg.classList.add('lane-svg');
-    svg.setAttribute('viewBox', `0 0 ${LIVE_VIEWBOX_W} 40`);
-    svg.setAttribute('width', '100%');
+    svg.classList.add('lane-svg', 'lane-svg--live');
+    svg.setAttribute('viewBox', `0 0 ${LIVE_STRIP_W} 40`);
+    svg.setAttribute('width', LIVE_STRIP_W);
     svg.setAttribute('preserveAspectRatio', 'none');
 
-    const slot = LIVE_VIEWBOX_W / LIVE_BAR_COUNT;
-    const barWidth = slot * 0.45;
+    const barWidth = BAR_STEP * 0.45;
     const bars = [];
     for (let i = 0; i < LIVE_BAR_COUNT; i++) {
       const rect = document.createElementNS(NS, 'rect');
-      rect.setAttribute('x', (i * slot).toFixed(1));
+      rect.setAttribute('x', (i * BAR_STEP).toFixed(1));
       rect.setAttribute('width', barWidth.toFixed(1));
       rect.setAttribute('rx', (barWidth / 2).toFixed(1));
       rect.setAttribute('fill', LIVE_COLOR);
@@ -1597,35 +1653,35 @@
   // ---------- Sound Map ----------
   const SOUND_LOCATIONS = [
     {
-      name: 'Riverside Park', tag: 'Park · Upper West Side', x: 32.4, y: 27.8,
+      slug: 'riverside-park', name: 'Riverside Park', tag: 'Park · Upper West Side', x: 50.8, y: 49.0,
       desc: 'Placeholder field recording — river air and wind moving through the trees along the Hudson.',
       file: 'RIVERSIDE_AMB_01', duration: '0:52',
       filterType: 'highpass', freq: 450, q: 0.7, level: 0.05,
       blip: 'chirp', blipRange: [2200, 4800],
     },
     {
-      name: 'Central Park', tag: 'Park · Midtown', x: 59.5, y: 33.8,
+      slug: 'central-park', name: 'Central Park', tag: 'Park · Midtown', x: 56.8, y: 55.1,
       desc: 'Placeholder field recording — open lawns and birdsong, muffled from the surrounding grid.',
       file: 'CENTRALPARK_AMB_02', duration: '1:04',
       filterType: 'bandpass', freq: 900, q: 0.9, level: 0.05,
       blip: 'chirp', blipRange: [1800, 4000],
     },
     {
-      name: 'Lower East Side', tag: 'Downtown · East Side', x: 55.7, y: 78.1,
+      slug: 'lower-east-side', name: 'Lower East Side', tag: 'Downtown · East Side', x: 29.5, y: 87.1,
       desc: 'Placeholder field recording — tight streets and overlapping conversation on a dense block.',
       file: 'LES_AMB_03', duration: '0:38',
       filterType: 'lowpass', freq: 2400, q: 0.5, level: 0.055,
       blip: 'honk', blipRange: [3000, 6200],
     },
     {
-      name: 'Lincoln Square', tag: 'Upper West Side', x: 31.1, y: 47.9,
+      slug: 'lincoln-square', name: 'Lincoln Square', tag: 'Upper West Side', x: 37.2, y: 64.0,
       desc: 'Placeholder field recording — traffic circling near Lincoln Center, a smoother hum by the plazas.',
       file: 'LINCOLNSQ_AMB_04', duration: '0:45',
       filterType: 'lowpass', freq: 1300, q: 0.6, level: 0.045,
       blip: 'honk', blipRange: [4200, 7500],
     },
     {
-      name: 'West Village', tag: 'Downtown · West Side', x: 31.1, y: 75,
+      slug: 'west-village', name: 'West Village', tag: 'Downtown · West Side', x: 21.9, y: 81.2,
       desc: 'Placeholder field recording — quiet tree-lined blocks and soft café chatter.',
       file: 'WVILLAGE_AMB_05', duration: '0:58',
       filterType: 'lowpass', freq: 1700, q: 0.5, level: 0.045,
@@ -1674,11 +1730,17 @@
     if (!soundmapPopup.classList.contains('is-open')) {
       soundmapLastFocused = document.activeElement;
     }
+    // Show the real file's name/length once one has been dropped in;
+    // otherwise fall back to the placeholder metadata.
+    const meta = loc.audioUrl
+      ? `${loc.realFile} · ${loc.realDuration}`
+      : `${loc.file}.wav · ${loc.duration} · 48kHz/24bit`;
+
     soundmapPopupContent.innerHTML = `
       <p class="soundmap-info__tag">${loc.tag}</p>
       <h3 class="soundmap-info__title">${loc.name}</h3>
       <p class="soundmap-info__desc">${loc.desc}</p>
-      <p class="soundmap-info__meta">${loc.file}.wav · ${loc.duration} · 48kHz/24bit</p>
+      <p class="soundmap-info__meta">${meta}</p>
       <div class="soundmap-wave"><svg viewBox="0 0 300 56" preserveAspectRatio="none" id="soundmapWaveSvg"></svg></div>
       <button type="button" class="soundmap-transport is-playing" id="soundmapTransport">
         <span class="soundmap-transport__dot"></span>
@@ -1713,15 +1775,57 @@
     if (e.key === 'Escape' && soundmapPopup.classList.contains('is-open')) closeSoundmapPopup();
   });
 
-  // Procedural placeholder ambience (Web Audio API) — no real field
-  // recordings exist yet, so each location gets a distinct filtered-noise
-  // bed plus occasional synthesized "blips" (birds/traffic/chime), so the
-  // player is genuinely functional rather than a dead button.
+  // Each location plays a real recording from assets/sound/<slug>.<ext> when
+  // one exists. Until then it falls back to a synthesized ambience bed so the
+  // player is never a dead button. Drop a file in and it takes over on reload.
+  const AUDIO_EXTENSIONS = ['mp3', 'm4a', 'ogg', 'wav'];
+
   let audioCtx = null;
   let ambienceNodes = null;
   let waveAnalyser = null;
   let waveFrameHandle = null;
   let waveBars = null;
+
+  function formatDuration(seconds) {
+    if (!isFinite(seconds)) return '';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${String(s).padStart(2, '0')}`;
+  }
+
+  // Try each extension in turn; resolve with the first that loads, else null.
+  function probeAudio(base) {
+    return new Promise((resolve) => {
+      let i = 0;
+      const tryNext = () => {
+        if (i >= AUDIO_EXTENSIONS.length) return resolve(null);
+        const ext = AUDIO_EXTENSIONS[i++];
+        const url = `${base}.${ext}`;
+        const probe = new Audio();
+        probe.preload = 'metadata';
+        const finish = (result) => {
+          probe.removeEventListener('loadedmetadata', onOk);
+          probe.removeEventListener('error', onErr);
+          if (result) resolve(result); else tryNext();
+        };
+        const onOk = () => finish({ url, ext, duration: probe.duration });
+        const onErr = () => finish(null);
+        probe.addEventListener('loadedmetadata', onOk);
+        probe.addEventListener('error', onErr);
+        probe.src = url;
+      };
+      tryNext();
+    });
+  }
+
+  SOUND_LOCATIONS.forEach((loc) => {
+    probeAudio(`assets/sound/${loc.slug}`).then((found) => {
+      if (!found) return;
+      loc.audioUrl = found.url;
+      loc.realFile = `${loc.slug}.${found.ext}`;
+      loc.realDuration = formatDuration(found.duration);
+    });
+  });
 
   function ensureAudioCtx() {
     if (!audioCtx) {
@@ -1785,6 +1889,41 @@
   }
 
   function startAmbience(loc) {
+    if (loc.audioUrl) return startFileAmbience(loc);
+    return startSynthAmbience(loc);
+  }
+
+  // Real recording: streamed through an <audio> element into the same graph,
+  // so the popup waveform reacts to the actual audio.
+  function startFileAmbience(loc) {
+    const ctx = ensureAudioCtx();
+
+    const el = new Audio(loc.audioUrl);
+    el.loop = true;
+    el.preload = 'auto';
+
+    const source = ctx.createMediaElementSource(el);
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 128;
+
+    source.connect(gain);
+    gain.connect(analyser);
+    gain.connect(ctx.destination);
+
+    const playPromise = el.play();
+    if (playPromise) playPromise.catch(() => {});
+
+    gain.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 0.8);
+
+    ambienceNodes = { el, source, gain, blipTimeout: null };
+    waveAnalyser = analyser;
+    startWaveLoop();
+  }
+
+  function startSynthAmbience(loc) {
     const ctx = ensureAudioCtx();
 
     const noise = ctx.createBufferSource();
@@ -1822,7 +1961,7 @@
     waveAnalyser = null;
 
     if (!ambienceNodes) return;
-    const { noise, filter, gain, blipTimeout } = ambienceNodes;
+    const { noise, filter, gain, blipTimeout, el, source } = ambienceNodes;
     clearTimeout(blipTimeout);
     const ctx = audioCtx;
     const now = ctx.currentTime;
@@ -1830,8 +1969,14 @@
     gain.gain.setValueAtTime(gain.gain.value, now);
     gain.gain.linearRampToValueAtTime(0, now + 0.35);
     setTimeout(() => {
-      try { noise.stop(); } catch (e) {}
-      try { noise.disconnect(); filter.disconnect(); gain.disconnect(); } catch (e) {}
+      try { if (noise) noise.stop(); } catch (e) {}
+      try { if (el) { el.pause(); el.src = ''; } } catch (e) {}
+      try {
+        if (noise) noise.disconnect();
+        if (filter) filter.disconnect();
+        if (source) source.disconnect();
+        gain.disconnect();
+      } catch (e) {}
     }, 400);
     ambienceNodes = null;
     resetWaveBars();
