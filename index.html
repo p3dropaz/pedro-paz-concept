@@ -1479,8 +1479,14 @@
   // newest sample sits at the right edge and older bars scroll off the left.
   const LIVE_STRIP_W = 1200;
   const LIVE_BAR_COUNT = Math.floor(LIVE_STRIP_W / BAR_STEP);
-  const LIVE_SAMPLE_INTERVAL = 70;
   const LIVE_MIN = 0.03;
+
+  // The static tracks translate PATTERN_W px over SCROLL_LOOP_SECONDS; the
+  // live strip advances one BAR_STEP per sample. Deriving the interval from
+  // those shared values keeps both scrolling at the identical rate.
+  const SCROLL_LOOP_SECONDS = 30; // must match .scroll-strip animation-duration
+  const SCROLL_PX_PER_SEC = PATTERN_W / SCROLL_LOOP_SECONDS;
+  const LIVE_SAMPLE_INTERVAL = (BAR_STEP / SCROLL_PX_PER_SEC) * 1000;
 
   const mic = {
     isActive: false,
@@ -1562,12 +1568,22 @@
 
   function liveTick(t, lastTick) {
     if (!mic.isActive) return;
-    if (t - lastTick >= LIVE_SAMPLE_INTERVAL) {
+
+    // Advance lastTick by exact interval steps rather than snapping it to the
+    // frame time — snapping rounds every tick up to the next animation frame,
+    // which compounds into the live track scrolling slower than the others.
+    // The catch-up loop is capped so a backgrounded tab can't stall the frame.
+    let pushed = 0;
+    while (t - lastTick >= LIVE_SAMPLE_INTERVAL && pushed < 8) {
       liveHistory.shift();
       liveHistory.push(Math.max(LIVE_MIN, Math.min(1, mic.getLevel())));
-      drawLiveBars();
-      lastTick = t;
+      lastTick += LIVE_SAMPLE_INTERVAL;
+      pushed++;
     }
+    if (pushed) drawLiveBars();
+    // Resync after a long stall so we don't spend many frames catching up.
+    if (t - lastTick > LIVE_SAMPLE_INTERVAL * 8) lastTick = t;
+
     liveFrameHandle = requestAnimationFrame((t2) => liveTick(t2, lastTick));
   }
 
