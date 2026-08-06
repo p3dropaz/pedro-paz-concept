@@ -1141,61 +1141,96 @@
 
     <div class="soundmap-container">
       <div class="soundmap-canvas" id="soundmapCanvas">
-        <svg class="soundmap-svg" id="soundmapSvg" viewBox="0 0 1000 1200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <svg class="soundmap-svg" id="soundmapSvg" viewBox="0 0 480 1200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           <defs>
-            <pattern id="mapGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-              <line x1="0" y1="0" x2="0" y2="20" stroke="#c9a769" stroke-width="0.3" stroke-opacity="0.2"/>
-              <line x1="0" y1="0" x2="20" y2="0" stroke="#c9a769" stroke-width="0.3" stroke-opacity="0.15"/>
-            </pattern>
             <clipPath id="manhattanClip">
-              <use href="#manhattanPath"/>
+              <path d="M240,20 L320,35 L345,60 L352,120 L345,180 L352,240 L360,300 L352,360 L345,420 L335,480 L322,530 L240,555 L158,530 L145,480 L135,420 L128,360 L120,300 L128,240 L135,180 L128,120 L153,60 L178,35 Z"/>
             </clipPath>
           </defs>
 
-          <!-- Manhattan island outline -->
-          <path id="manhattanPath" class="soundmap-island" d="M500,50 L620,80 L650,120 L660,200 L650,300 L660,400 L670,500 L660,600 L650,700 L640,800 L630,900 L600,950 L500,980 L400,950 L350,900 L340,800 L330,700 L320,600 L310,500 L300,400 L290,300 L280,200 L300,120 L350,80 Z" />
+          <!-- Black background -->
+          <rect width="480" height="1200" fill="#0a0a0a"/>
 
-          <!-- Grid background -->
+          <!-- Manhattan clipped content -->
           <g clip-path="url(#manhattanClip)">
-            <rect x="200" y="0" width="600" height="1000" fill="url(#mapGrid)"/>
+            <!-- Water/background -->
+            <rect width="480" height="1200" fill="#0a0a0a"/>
 
-            <!-- Major avenues (vertical) -->
-            <line x1="280" y1="50" x2="280" y2="950" class="soundmap-arterial" stroke-width="2.5"/>
-            <line x1="350" y1="80" x2="350" y2="950" class="soundmap-arterial" stroke-width="2.5"/>
-            <line x1="420" y1="80" x2="420" y2="950" class="soundmap-arterial" stroke-width="2"/>
-            <line x1="500" y1="50" x2="500" y2="980" class="soundmap-arterial" stroke-width="2.5"/>
-            <line x1="580" y1="80" x2="580" y2="950" class="soundmap-arterial" stroke-width="2"/>
-            <line x1="650" y1="120" x2="650" y2="950" class="soundmap-arterial" stroke-width="2.5"/>
+            <!-- Street grid - regular streets (thin lines) -->
+            <g stroke="#c9a769" stroke-width="0.8" stroke-opacity="0.6">
+              <!-- Vertical avenues -->
+              <line x1="120" y1="20" x2="120" y2="555"/>
+              <line x1="135" y1="35" x2="135" y2="555"/>
+              <line x1="150" y1="40" x2="150" y2="555"/>
+              <line x1="165" y1="45" x2="165" y2="555"/>
+              <line x1="180" y1="50" x2="180" y2="555"/>
+              <line x1="195" y1="55" x2="195" y2="555"/>
+              <line x1="210" y1="58" x2="210" y2="555"/>
+              <line x1="225" y1="60" x2="225" y2="555"/>
+              <line x1="240" y1="20" x2="240" y2="555"/>
+              <line x1="255" y1="60" x2="255" y2="555"/>
+              <line x1="270" y1="58" x2="270" y2="555"/>
+              <line x1="285" y1="55" x2="285" y2="555"/>
+              <line x1="300" y1="50" x2="300" y2="555"/>
+              <line x1="315" y1="45" x2="315" y2="555"/>
+              <line x1="330" y1="40" x2="330" y2="555"/>
+              <line x1="345" y1="35" x2="345" y2="555"/>
+              <line x1="360" y1="20" x2="360" y2="555"/>
+            </g>
 
-            <!-- Major cross streets (horizontal) -->
-            <line x1="280" y1="200" x2="670" y2="200" class="soundmap-arterial soundmap-arterial--cross"/>
-            <line x1="280" y1="350" x2="670" y2="350" class="soundmap-arterial soundmap-arterial--cross"/>
-            <line x1="280" y1="500" x2="670" y2="500" class="soundmap-arterial soundmap-arterial--cross"/>
-            <line x1="280" y1="650" x2="670" y2="650" class="soundmap-arterial soundmap-arterial--cross"/>
-            <line x1="280" y1="800" x2="640" y2="800" class="soundmap-arterial soundmap-arterial--cross"/>
+            <!-- Cross streets (thin lines) -->
+            <g stroke="#c9a769" stroke-width="0.6" stroke-opacity="0.5">
+              <line x1="120" y1="80" x2="360" y2="80"/>
+              <line x1="120" y1="110" x2="360" y2="110"/>
+              <line x1="120" y1="140" x2="360" y2="140"/>
+              <line x1="120" y1="170" x2="360" y2="170"/>
+              <line x1="120" y1="200" x2="360" y2="200"/>
+              <line x1="120" y1="230" x2="360" y2="230"/>
+              <line x1="120" y1="260" x2="360" y2="260"/>
+              <line x1="120" y1="290" x2="360" y2="290"/>
+              <line x1="120" y1="320" x2="360" y2="320"/>
+              <line x1="120" y1="350" x2="360" y2="350"/>
+              <line x1="120" y1="380" x2="360" y2="380"/>
+              <line x1="120" y1="410" x2="360" y2="410"/>
+              <line x1="120" y1="440" x2="360" y2="440"/>
+              <line x1="120" y1="470" x2="360" y2="470"/>
+              <line x1="120" y1="500" x2="360" y2="500"/>
+            </g>
+
+            <!-- Major avenues (thicker lines) -->
+            <g stroke="#c9a769" stroke-width="2.2" stroke-opacity="0.8">
+              <line x1="150" y1="40" x2="150" y2="555"/>
+              <line x1="210" y1="58" x2="210" y2="555"/>
+              <line x1="240" y1="20" x2="240" y2="555"/>
+              <line x1="270" y1="58" x2="270" y2="555"/>
+              <line x1="330" y1="40" x2="330" y2="555"/>
+            </g>
+
+            <!-- Major cross streets (thicker lines) -->
+            <g stroke="#c9a769" stroke-width="1.5" stroke-opacity="0.7">
+              <line x1="120" y1="110" x2="360" y2="110"/>
+              <line x1="120" y1="200" x2="360" y2="200"/>
+              <line x1="120" y1="290" x2="360" y2="290"/>
+              <line x1="120" y1="380" x2="360" y2="380"/>
+              <line x1="120" y1="470" x2="360" y2="470"/>
+            </g>
+
+            <!-- Central Park outline -->
+            <path d="M180,200 L280,200 L280,350 L180,350 Z" fill="none" stroke="#c9a769" stroke-width="2.5" stroke-opacity="0.7"/>
+
+            <!-- Riverside Park outline -->
+            <path d="M110,180 L125,180 L125,420 L110,420 Z" fill="none" stroke="#c9a769" stroke-width="2" stroke-opacity="0.6"/>
+
+            <!-- Hudson River suggestion -->
+            <path d="M105,50 Q100,300 105,555" fill="none" stroke="#c9a769" stroke-width="1.5" stroke-opacity="0.3"/>
+
+            <!-- East River suggestion -->
+            <path d="M375,50 Q380,300 375,555" fill="none" stroke="#c9a769" stroke-width="1.5" stroke-opacity="0.3"/>
           </g>
 
-          <!-- Central Park -->
-          <rect class="soundmap-park" x="380" y="300" width="240" height="280" rx="4"/>
-          <text class="soundmap-area-label" x="500" y="445">CENTRAL PARK</text>
-
-          <!-- Riverside Park -->
-          <rect class="soundmap-park" x="260" y="280" width="40" height="380" rx="2"/>
-          <text class="soundmap-area-label" x="240" y="320" text-anchor="end">RIVERSIDE</text>
-
-          <!-- Washington Square Park -->
-          <circle class="soundmap-park" cx="420" cy="750" r="35"/>
-          <text class="soundmap-area-label" x="420" y="755" text-anchor="middle">W. SQUARE</text>
-
-          <!-- Neighborhood labels -->
-          <text class="soundmap-area-label" x="500" y="120">INWOOD</text>
-          <text class="soundmap-area-label" x="500" y="180">HARLEM</text>
-          <text class="soundmap-area-label" x="650" y="280">UPPER EAST</text>
-          <text class="soundmap-area-label" x="280" y="280">UPPER WEST</text>
-          <text class="soundmap-area-label" x="500" y="600">MIDTOWN</text>
-          <text class="soundmap-area-label" x="350" y="800">WEST VILLAGE</text>
-          <text class="soundmap-area-label" x="580" y="850">LOWER EAST</text>
-          <text class="soundmap-area-label" x="420" y="920">CHINATOWN</text>
+          <!-- Island outline (on top) -->
+          <path d="M240,20 L320,35 L345,60 L352,120 L345,180 L352,240 L360,300 L352,360 L345,420 L335,480 L322,530 L240,555 L158,530 L145,480 L135,420 L128,360 L120,300 L128,240 L135,180 L128,120 L153,60 L178,35 Z"
+                fill="none" stroke="#c9a769" stroke-width="2.8" stroke-opacity="0.9"/>
         </svg>
         <div class="soundmap-pins" id="soundmapPins"></div>
       </div>
@@ -1747,35 +1782,35 @@
   // ---------- Sound Map ----------
   const SOUND_LOCATIONS = [
     {
-      slug: 'riverside-park', name: 'Riverside Park', tag: 'Park · Upper West Side', x: 300, y: 350,
+      slug: 'riverside-park', name: 'Riverside Park', tag: 'Park · Upper West Side', x: 118, y: 280,
       desc: 'Placeholder field recording — river air and wind moving through the trees along the Hudson.',
       file: 'RIVERSIDE_AMB_01', duration: '0:52',
       filterType: 'highpass', freq: 450, q: 0.7, level: 0.05,
       blip: 'chirp', blipRange: [2200, 4800],
     },
     {
-      slug: 'central-park', name: 'Central Park', tag: 'Park · Midtown', x: 500, y: 440,
+      slug: 'central-park', name: 'Central Park', tag: 'Park · Midtown', x: 240, y: 275,
       desc: 'Placeholder field recording — open lawns and birdsong, muffled from the surrounding grid.',
       file: 'CENTRALPARK_AMB_02', duration: '1:04',
       filterType: 'bandpass', freq: 900, q: 0.9, level: 0.05,
       blip: 'chirp', blipRange: [1800, 4000],
     },
     {
-      slug: 'lower-east-side', name: 'Lower East Side', tag: 'Downtown · East Side', x: 600, y: 800,
+      slug: 'lower-east-side', name: 'Lower East Side', tag: 'Downtown · East Side', x: 300, y: 450,
       desc: 'Placeholder field recording — tight streets and overlapping conversation on a dense block.',
       file: 'LES_AMB_03', duration: '0:38',
       filterType: 'lowpass', freq: 2400, q: 0.5, level: 0.055,
       blip: 'honk', blipRange: [3000, 6200],
     },
     {
-      slug: 'lincoln-square', name: 'Lincoln Square', tag: 'Upper West Side', x: 350, y: 520,
+      slug: 'lincoln-square', name: 'Lincoln Square', tag: 'Upper West Side', x: 200, y: 330,
       desc: 'Placeholder field recording — traffic circling near Lincoln Center, a smoother hum by the plazas.',
       file: 'LINCOLNSQ_AMB_04', duration: '0:45',
       filterType: 'lowpass', freq: 1300, q: 0.6, level: 0.045,
       blip: 'honk', blipRange: [4200, 7500],
     },
     {
-      slug: 'west-village', name: 'West Village', tag: 'Downtown · West Side', x: 380, y: 750,
+      slug: 'west-village', name: 'West Village', tag: 'Downtown · West Side', x: 190, y: 480,
       desc: 'Placeholder field recording — quiet tree-lined blocks and soft café chatter.',
       file: 'WVILLAGE_AMB_05', duration: '0:58',
       filterType: 'lowpass', freq: 1700, q: 0.5, level: 0.045,
