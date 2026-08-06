@@ -658,77 +658,21 @@
   .lightbox__close:hover { border-color: var(--accent); color: var(--accent); }
 
   /* ---------- Sound Map ---------- */
-  .soundmap-container {
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
   .soundmap-canvas {
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 5;
+    max-width: 420px;
+    margin: 0 auto;
+    /* Matches the SVG viewBox exactly so preserveAspectRatio never
+       letterboxes — otherwise the % positioned HTML pins drift out of
+       sync with the actual rendered map content. */
+    aspect-ratio: 366 / 761;
     border: 1px solid var(--line);
     background: #0d0b08;
     overflow: hidden;
-    cursor: grab;
   }
 
-  .soundmap-canvas.is-dragging {
-    cursor: grabbing;
-  }
-
-  .soundmap-image {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
-  .soundmap-controls {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-  }
-
-  .soundmap-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    background: transparent;
-    border: 1px solid var(--line);
-    color: var(--fg-dim);
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-  }
-
-  .soundmap-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .soundmap-zoom-level {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.05em;
-    color: var(--fg-faint);
-    min-width: 50px;
-    text-align: center;
-  }
-
-  .soundmap-reset-btn {
-    padding: 0 1rem;
-  }
+  .soundmap-svg { display: block; width: 100%; height: 100%; }
 
   .soundmap-island {
     fill: #14110b;
@@ -772,7 +716,6 @@
   .soundmap-pins {
     position: absolute;
     inset: 0;
-    pointer-events: none;
   }
 
   .soundmap-pin {
@@ -787,8 +730,6 @@
     border: none;
     cursor: pointer;
     padding: 0;
-    pointer-events: auto;
-    z-index: 10;
   }
 
   .soundmap-pin__ring {
@@ -1140,18 +1081,67 @@
     </div>
     <p class="credits-hint">// CLICK A PIN TO PLAY A FIELD RECORDING</p>
 
-    <div class="soundmap-container">
-      <div class="soundmap-canvas" id="soundmapCanvas">
-        <img class="soundmap-image" id="soundmapImage" src="assets/nyc-map.jpg" alt="NYC Vector Map">
-        <div class="soundmap-pins" id="soundmapPins"></div>
-      </div>
+    <div class="soundmap-canvas">
+      <svg class="soundmap-svg" viewBox="-8 -8 366 761" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <defs>
+          <!-- Grid tilted to the island's ~21° axis, so "avenues" run its
+               length and "streets" cross it, as in the reference. -->
+          <pattern id="mapGrid" width="15" height="5.5" patternUnits="userSpaceOnUse" patternTransform="rotate(21)">
+            <line x1="0" y1="0" x2="0" y2="5.5" stroke="#c9a769" stroke-width="0.5" stroke-opacity="0.4"/>
+            <line x1="0" y1="0" x2="15" y2="0" stroke="#c9a769" stroke-width="0.35" stroke-opacity="0.22"/>
+          </pattern>
+          <clipPath id="islandClip">
+            <use href="#islandPath"/>
+          </clipPath>
+        </defs>
 
-      <div class="soundmap-controls">
-        <button class="soundmap-btn" id="zoomOut" title="Zoom out" aria-label="Zoom out">−</button>
-        <span class="soundmap-zoom-level" id="zoomLevel">100%</span>
-        <button class="soundmap-btn" id="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
-        <button class="soundmap-btn soundmap-reset-btn" id="resetMap" title="Reset map" aria-label="Reset map view">Reset</button>
-      </div>
+        <!-- Traced from the reference: Inwood tip top-right, NE shoulder,
+             narrow waist, Harlem/UES bulge east, long SW taper to Battery. -->
+        <path id="islandPath" class="soundmap-island" d="M308,6
+          C320,16 336,34 344,52
+          C346,64 334,78 322,92
+          C312,106 300,126 292,148
+          C284,172 276,204 268,242
+          C272,268 284,294 294,318
+          C300,332 303,342 302,354
+          C300,370 292,384 284,400
+          C274,418 262,434 250,454
+          C236,476 222,500 208,524
+          C194,548 178,572 162,596
+          C147,620 132,642 116,664
+          C100,684 84,702 66,718
+          C52,730 36,740 20,741
+          C10,736 1,723 3,706
+          C6,688 14,672 24,654
+          C34,634 44,612 54,590
+          C64,567 74,544 84,522
+          C94,498 104,474 114,450
+          C124,426 134,402 145,378
+          C156,352 167,326 178,300
+          C189,274 200,248 212,222
+          C224,194 236,166 248,140
+          C260,114 272,88 285,62
+          C293,42 300,22 308,6 Z" />
+
+
+        <g clip-path="url(#islandClip)">
+          <rect x="-20" y="-20" width="400" height="800" fill="url(#mapGrid)"></rect>
+          <path class="soundmap-arterial" d="M295,40 C262,150 200,300 158,470 C120,610 80,690 40,730" />
+          <path class="soundmap-arterial soundmap-arterial--cross" d="M186,282 L280,318" />
+          <path class="soundmap-arterial soundmap-arterial--cross" d="M102,478 L214,522" />
+          <path class="soundmap-arterial soundmap-arterial--cross" d="M31,634 L115,666" />
+        </g>
+
+        <!-- Rotated to sit square with the tilted street grid -->
+        <rect class="soundmap-park" id="soundmapParkRect" x="181" y="345" width="38" height="132" rx="2" transform="rotate(21 200 411)"></rect>
+
+        <text class="soundmap-area-label" id="soundmapParkLabel" x="286" y="416">CENTRAL PARK</text>
+        <text class="soundmap-area-label" id="labelRiverside" x="148" y="358" text-anchor="end">RIVERSIDE PARK</text>
+        <text class="soundmap-area-label" id="labelLincoln" x="96" y="485" text-anchor="end">LINCOLN SQUARE</text>
+        <text class="soundmap-area-label" id="labelVillage" x="38" y="616" text-anchor="end">WEST VILLAGE</text>
+        <text class="soundmap-area-label" id="labelLES" x="133" y="661">LOWER EAST SIDE</text>
+      </svg>
+      <div class="soundmap-pins" id="soundmapPins"></div>
     </div>
   </section>
 
@@ -1693,35 +1683,35 @@
   // ---------- Sound Map ----------
   const SOUND_LOCATIONS = [
     {
-      slug: 'riverside-park', name: 'Riverside Park', tag: 'Park · Upper West Side', x: 118, y: 280,
+      slug: 'riverside-park', name: 'Riverside Park', tag: 'Park · Upper West Side', x: 50.8, y: 49.0,
       desc: 'Placeholder field recording — river air and wind moving through the trees along the Hudson.',
       file: 'RIVERSIDE_AMB_01', duration: '0:52',
       filterType: 'highpass', freq: 450, q: 0.7, level: 0.05,
       blip: 'chirp', blipRange: [2200, 4800],
     },
     {
-      slug: 'central-park', name: 'Central Park', tag: 'Park · Midtown', x: 240, y: 275,
+      slug: 'central-park', name: 'Central Park', tag: 'Park · Midtown', x: 56.8, y: 55.1,
       desc: 'Placeholder field recording — open lawns and birdsong, muffled from the surrounding grid.',
       file: 'CENTRALPARK_AMB_02', duration: '1:04',
       filterType: 'bandpass', freq: 900, q: 0.9, level: 0.05,
       blip: 'chirp', blipRange: [1800, 4000],
     },
     {
-      slug: 'lower-east-side', name: 'Lower East Side', tag: 'Downtown · East Side', x: 300, y: 450,
+      slug: 'lower-east-side', name: 'Lower East Side', tag: 'Downtown · East Side', x: 29.5, y: 87.1,
       desc: 'Placeholder field recording — tight streets and overlapping conversation on a dense block.',
       file: 'LES_AMB_03', duration: '0:38',
       filterType: 'lowpass', freq: 2400, q: 0.5, level: 0.055,
       blip: 'honk', blipRange: [3000, 6200],
     },
     {
-      slug: 'lincoln-square', name: 'Lincoln Square', tag: 'Upper West Side', x: 200, y: 330,
+      slug: 'lincoln-square', name: 'Lincoln Square', tag: 'Upper West Side', x: 37.2, y: 64.0,
       desc: 'Placeholder field recording — traffic circling near Lincoln Center, a smoother hum by the plazas.',
       file: 'LINCOLNSQ_AMB_04', duration: '0:45',
       filterType: 'lowpass', freq: 1300, q: 0.6, level: 0.045,
       blip: 'honk', blipRange: [4200, 7500],
     },
     {
-      slug: 'west-village', name: 'West Village', tag: 'Downtown · West Side', x: 190, y: 480,
+      slug: 'west-village', name: 'West Village', tag: 'Downtown · West Side', x: 21.9, y: 81.2,
       desc: 'Placeholder field recording — quiet tree-lined blocks and soft café chatter.',
       file: 'WVILLAGE_AMB_05', duration: '0:58',
       filterType: 'lowpass', freq: 1700, q: 0.5, level: 0.045,
@@ -1729,104 +1719,6 @@
     },
   ];
 
-  // ---------- Zoom and Pan Control ----------
-  const soundmapCanvas = document.getElementById('soundmapCanvas');
-  const soundmapImage = document.getElementById('soundmapImage');
-  const zoomInBtn = document.getElementById('zoomIn');
-  const zoomOutBtn = document.getElementById('zoomOut');
-  const resetMapBtn = document.getElementById('resetMap');
-  const zoomLevelDisplay = document.getElementById('zoomLevel');
-
-  let currentZoom = 1;
-  const MIN_ZOOM = 1;
-  const MAX_ZOOM = 3;
-  const ZOOM_STEP = 0.2;
-  let panX = 0;
-  let panY = 0;
-  let isPanning = false;
-  let lastMouseX = 0;
-  let lastMouseY = 0;
-
-  function updateMapTransform() {
-    const transformStr = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
-    soundmapImage.style.transform = transformStr;
-    soundmapImage.style.transformOrigin = 'top left';
-    soundmapPins.style.transform = transformStr;
-    soundmapPins.style.transformOrigin = 'top left';
-    zoomLevelDisplay.textContent = Math.round(currentZoom * 100) + '%';
-  }
-
-  function setZoom(newZoom) {
-    const clampedZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom));
-    if (clampedZoom === currentZoom) return;
-
-    const canvasRect = soundmapCanvas.getBoundingClientRect();
-    const centerX = canvasRect.width / 2;
-    const centerY = canvasRect.height / 2;
-
-    // Adjust pan to zoom toward center
-    const zoomDiff = clampedZoom - currentZoom;
-    panX -= (centerX / currentZoom) * (zoomDiff / clampedZoom);
-    panY -= (centerY / currentZoom) * (zoomDiff / clampedZoom);
-
-    currentZoom = clampedZoom;
-    constrainPan();
-    updateMapTransform();
-  }
-
-  function constrainPan() {
-    const canvasRect = soundmapCanvas.getBoundingClientRect();
-    const scaledWidth = 1000 * currentZoom;
-    const scaledHeight = 1200 * currentZoom;
-
-    const maxPanX = Math.max(0, scaledWidth - canvasRect.width);
-    const maxPanY = Math.max(0, scaledHeight - canvasRect.height);
-
-    panX = Math.max(-maxPanX, Math.min(0, panX));
-    panY = Math.max(-maxPanY, Math.min(0, panY));
-  }
-
-  zoomInBtn.addEventListener('click', () => setZoom(currentZoom + ZOOM_STEP));
-  zoomOutBtn.addEventListener('click', () => setZoom(currentZoom - ZOOM_STEP));
-  resetMapBtn.addEventListener('click', () => {
-    currentZoom = 1;
-    panX = 0;
-    panY = 0;
-    updateMapTransform();
-  });
-
-  soundmapCanvas.addEventListener('mousedown', (e) => {
-    isPanning = true;
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-    soundmapCanvas.classList.add('is-dragging');
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isPanning) return;
-    const deltaX = e.clientX - lastMouseX;
-    const deltaY = e.clientY - lastMouseY;
-    panX += deltaX;
-    panY += deltaY;
-    constrainPan();
-    updateMapTransform();
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-  });
-
-  document.addEventListener('mouseup', () => {
-    isPanning = false;
-    soundmapCanvas.classList.remove('is-dragging');
-  });
-
-  // Wheel zoom
-  soundmapCanvas.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
-    setZoom(currentZoom + delta);
-  }, { passive: false });
-
-  // ---------- Pin Creation and Sound Map Interaction ----------
   const soundmapPins = document.getElementById('soundmapPins');
   const soundmapPopup = document.getElementById('soundmapPopup');
   const soundmapPopupContent = document.getElementById('soundmapPopupContent');
@@ -1839,14 +1731,11 @@
     const pin = document.createElement('button');
     pin.type = 'button';
     pin.className = 'soundmap-pin';
-    pin.style.left = loc.x + 'px';
-    pin.style.top = loc.y + 'px';
+    pin.style.left = loc.x + '%';
+    pin.style.top = loc.y + '%';
     pin.setAttribute('aria-label', `Play ambience from ${loc.name}`);
     pin.innerHTML = '<span class="soundmap-pin__ring"></span><span class="soundmap-pin__dot"></span>';
-    pin.addEventListener('click', (e) => {
-      e.stopPropagation();
-      selectLocation(loc, pin);
-    });
+    pin.addEventListener('click', () => selectLocation(loc, pin));
     soundmapPins.appendChild(pin);
   });
 
