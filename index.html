@@ -682,10 +682,11 @@
     cursor: grabbing;
   }
 
-  .soundmap-svg {
+  .soundmap-image {
     display: block;
     width: 100%;
     height: 100%;
+    object-fit: contain;
     user-select: none;
     -webkit-user-select: none;
   }
@@ -1141,97 +1142,7 @@
 
     <div class="soundmap-container">
       <div class="soundmap-canvas" id="soundmapCanvas">
-        <svg class="soundmap-svg" id="soundmapSvg" viewBox="0 0 480 1200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-          <defs>
-            <clipPath id="manhattanClip">
-              <path d="M240,20 L320,35 L345,60 L352,120 L345,180 L352,240 L360,300 L352,360 L345,420 L335,480 L322,530 L240,555 L158,530 L145,480 L135,420 L128,360 L120,300 L128,240 L135,180 L128,120 L153,60 L178,35 Z"/>
-            </clipPath>
-          </defs>
-
-          <!-- Black background -->
-          <rect width="480" height="1200" fill="#0a0a0a"/>
-
-          <!-- Manhattan clipped content -->
-          <g clip-path="url(#manhattanClip)">
-            <!-- Water/background -->
-            <rect width="480" height="1200" fill="#0a0a0a"/>
-
-            <!-- Street grid - regular streets (thin lines) -->
-            <g stroke="#c9a769" stroke-width="0.8" stroke-opacity="0.6">
-              <!-- Vertical avenues -->
-              <line x1="120" y1="20" x2="120" y2="555"/>
-              <line x1="135" y1="35" x2="135" y2="555"/>
-              <line x1="150" y1="40" x2="150" y2="555"/>
-              <line x1="165" y1="45" x2="165" y2="555"/>
-              <line x1="180" y1="50" x2="180" y2="555"/>
-              <line x1="195" y1="55" x2="195" y2="555"/>
-              <line x1="210" y1="58" x2="210" y2="555"/>
-              <line x1="225" y1="60" x2="225" y2="555"/>
-              <line x1="240" y1="20" x2="240" y2="555"/>
-              <line x1="255" y1="60" x2="255" y2="555"/>
-              <line x1="270" y1="58" x2="270" y2="555"/>
-              <line x1="285" y1="55" x2="285" y2="555"/>
-              <line x1="300" y1="50" x2="300" y2="555"/>
-              <line x1="315" y1="45" x2="315" y2="555"/>
-              <line x1="330" y1="40" x2="330" y2="555"/>
-              <line x1="345" y1="35" x2="345" y2="555"/>
-              <line x1="360" y1="20" x2="360" y2="555"/>
-            </g>
-
-            <!-- Cross streets (thin lines) -->
-            <g stroke="#c9a769" stroke-width="0.6" stroke-opacity="0.5">
-              <line x1="120" y1="80" x2="360" y2="80"/>
-              <line x1="120" y1="110" x2="360" y2="110"/>
-              <line x1="120" y1="140" x2="360" y2="140"/>
-              <line x1="120" y1="170" x2="360" y2="170"/>
-              <line x1="120" y1="200" x2="360" y2="200"/>
-              <line x1="120" y1="230" x2="360" y2="230"/>
-              <line x1="120" y1="260" x2="360" y2="260"/>
-              <line x1="120" y1="290" x2="360" y2="290"/>
-              <line x1="120" y1="320" x2="360" y2="320"/>
-              <line x1="120" y1="350" x2="360" y2="350"/>
-              <line x1="120" y1="380" x2="360" y2="380"/>
-              <line x1="120" y1="410" x2="360" y2="410"/>
-              <line x1="120" y1="440" x2="360" y2="440"/>
-              <line x1="120" y1="470" x2="360" y2="470"/>
-              <line x1="120" y1="500" x2="360" y2="500"/>
-            </g>
-
-            <!-- Major avenues (thicker lines) -->
-            <g stroke="#c9a769" stroke-width="2.2" stroke-opacity="0.8">
-              <line x1="150" y1="40" x2="150" y2="555"/>
-              <line x1="210" y1="58" x2="210" y2="555"/>
-              <line x1="240" y1="20" x2="240" y2="555"/>
-              <line x1="270" y1="58" x2="270" y2="555"/>
-              <line x1="330" y1="40" x2="330" y2="555"/>
-            </g>
-
-            <!-- Major cross streets (thicker lines) -->
-            <g stroke="#c9a769" stroke-width="1.5" stroke-opacity="0.7">
-              <line x1="120" y1="110" x2="360" y2="110"/>
-              <line x1="120" y1="200" x2="360" y2="200"/>
-              <line x1="120" y1="290" x2="360" y2="290"/>
-              <line x1="120" y1="380" x2="360" y2="380"/>
-              <line x1="120" y1="470" x2="360" y2="470"/>
-            </g>
-
-            <!-- Central Park outline -->
-            <path d="M180,200 L280,200 L280,350 L180,350 Z" fill="none" stroke="#c9a769" stroke-width="2.5" stroke-opacity="0.7"/>
-
-            <!-- Riverside Park outline -->
-            <path d="M110,180 L125,180 L125,420 L110,420 Z" fill="none" stroke="#c9a769" stroke-width="2" stroke-opacity="0.6"/>
-
-            <!-- Hudson River suggestion -->
-            <path d="M105,50 Q100,300 105,555" fill="none" stroke="#c9a769" stroke-width="1.5" stroke-opacity="0.3"/>
-
-            <!-- East River suggestion -->
-            <path d="M375,50 Q380,300 375,555" fill="none" stroke="#c9a769" stroke-width="1.5" stroke-opacity="0.3"/>
-          </g>
-
-          <!-- Island outline (on top) -->
-          <path d="M240,20 L320,35 L345,60 L352,120 L345,180 L352,240 L360,300 L352,360 L345,420 L335,480 L322,530 L240,555 L158,530 L145,480 L135,420 L128,360 L120,300 L128,240 L135,180 L128,120 L153,60 L178,35 Z"
-                fill="none" stroke="#c9a769" stroke-width="2.8" stroke-opacity="0.9"/>
-        </svg>
+        <img class="soundmap-image" id="soundmapImage" src="assets/nyc-map.jpg" alt="NYC Vector Map">
         <div class="soundmap-pins" id="soundmapPins"></div>
       </div>
 
@@ -1820,7 +1731,7 @@
 
   // ---------- Zoom and Pan Control ----------
   const soundmapCanvas = document.getElementById('soundmapCanvas');
-  const soundmapSvg = document.getElementById('soundmapSvg');
+  const soundmapImage = document.getElementById('soundmapImage');
   const zoomInBtn = document.getElementById('zoomIn');
   const zoomOutBtn = document.getElementById('zoomOut');
   const resetMapBtn = document.getElementById('resetMap');
@@ -1838,8 +1749,8 @@
 
   function updateMapTransform() {
     const transformStr = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
-    soundmapSvg.style.transform = transformStr;
-    soundmapSvg.style.transformOrigin = 'top left';
+    soundmapImage.style.transform = transformStr;
+    soundmapImage.style.transformOrigin = 'top left';
     soundmapPins.style.transform = transformStr;
     soundmapPins.style.transformOrigin = 'top left';
     zoomLevelDisplay.textContent = Math.round(currentZoom * 100) + '%';
