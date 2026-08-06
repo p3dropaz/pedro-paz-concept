@@ -38,82 +38,7 @@
 
   a { color: inherit; text-decoration: none; }
 
-  /* ---------- Access gate ---------- */
-  .gate {
-    position: fixed;
-    inset: 0;
-    z-index: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-    transition: opacity 0.5s ease, visibility 0s linear 0s;
-  }
-
-  .gate.is-unlocked {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.5s ease, visibility 0s linear 0.5s;
-  }
-
-  .gate__form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.25rem;
-    padding: 0 1.5rem;
-    text-align: center;
-    width: 100%;
-    max-width: 320px;
-  }
-
-  .gate__mark { font-size: 1.4rem; color: var(--fg); }
-  .gate__label { font-size: 0.85rem; line-height: 1.6; color: var(--fg-dim); }
-
-  .gate__input {
-    width: 100%;
-    background: transparent;
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    padding: 0.85rem 1rem;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.9rem;
-    color: var(--fg);
-    text-align: center;
-    transition: border-color 0.3s ease;
-  }
-
-  .gate__input:focus { outline: none; border-color: var(--accent); }
-
-  .gate__submit {
-    width: 100%;
-    background: transparent;
-    border: 1px solid var(--accent);
-    border-radius: 2px;
-    padding: 0.85rem 1rem;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent);
-    cursor: pointer;
-    transition: background 0.3s ease, color 0.3s ease;
-  }
-
-  .gate__submit:hover { background: var(--accent); color: var(--bg); }
-
-  .gate__error { min-height: 1.1em; font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--rec); }
-
-  .gate__form.is-shake { animation: gateShake 0.4s ease; }
-
-  @keyframes gateShake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-8px); }
-    75% { transform: translateX(8px); }
-  }
-
-  /* ---------- Nav ---------- */
+/* ---------- Nav ---------- */
   .nav {
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -1010,16 +935,6 @@
 </head>
 <body>
 
-<div class="gate" id="gate">
-  <form class="gate__form" id="gateForm" autocomplete="off">
-    <p class="gate__mark">Pedro Paz</p>
-    <p class="gate__label">This is a design concept preview.<br>Enter the password to continue.</p>
-    <input type="password" id="gatePassword" class="gate__input" placeholder="Password" autocomplete="off">
-    <button type="submit" class="gate__submit">Enter</button>
-    <p class="gate__error" id="gateError" aria-live="polite"></p>
-  </form>
-</div>
-
 <header class="nav">
   <span class="nav__tag">PEDRO PAZ // AUDIO POST</span>
   <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
@@ -1218,35 +1133,6 @@
 </div>
 
 <script>
-  // ---------- Access gate ----------
-  const GATE_PASSWORD = 'pedro';
-  const GATE_STORAGE_KEY = 'ppc-gate-unlocked';
-  const gate = document.getElementById('gate');
-  const gateForm = document.getElementById('gateForm');
-  const gatePassword = document.getElementById('gatePassword');
-  const gateError = document.getElementById('gateError');
-
-  if (localStorage.getItem(GATE_STORAGE_KEY) === '1') {
-    gate.classList.add('is-unlocked');
-  } else {
-    gatePassword.focus();
-  }
-
-  gateForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (gatePassword.value.trim().toLowerCase() === GATE_PASSWORD) {
-      localStorage.setItem(GATE_STORAGE_KEY, '1');
-      gate.classList.add('is-unlocked');
-    } else {
-      gateError.textContent = 'Incorrect password — try again.';
-      gateForm.classList.remove('is-shake');
-      void gateForm.offsetWidth;
-      gateForm.classList.add('is-shake');
-      gatePassword.value = '';
-      gatePassword.focus();
-    }
-  });
-
   // ---------- Nav menu ----------
   const navToggle = document.getElementById('navToggle');
   const navMenu = document.getElementById('navMenu');
@@ -1683,35 +1569,35 @@
   // ---------- Sound Map ----------
   const SOUND_LOCATIONS = [
     {
-      slug: 'riverside-park', name: 'Riverside Park', tag: 'Park · Upper West Side', x: 50.8, y: 49.0,
+      slug: 'riverside-park', name: 'Riverside Park', tag: 'Park · Upper West Side', x: 48, y: 12,
       desc: 'Placeholder field recording — river air and wind moving through the trees along the Hudson.',
       file: 'RIVERSIDE_AMB_01', duration: '0:52',
       filterType: 'highpass', freq: 450, q: 0.7, level: 0.05,
       blip: 'chirp', blipRange: [2200, 4800],
     },
     {
-      slug: 'central-park', name: 'Central Park', tag: 'Park · Midtown', x: 56.8, y: 55.1,
+      slug: 'central-park', name: 'Central Park', tag: 'Park · Midtown', x: 52, y: 38,
       desc: 'Placeholder field recording — open lawns and birdsong, muffled from the surrounding grid.',
       file: 'CENTRALPARK_AMB_02', duration: '1:04',
       filterType: 'bandpass', freq: 900, q: 0.9, level: 0.05,
       blip: 'chirp', blipRange: [1800, 4000],
     },
     {
-      slug: 'lower-east-side', name: 'Lower East Side', tag: 'Downtown · East Side', x: 29.5, y: 87.1,
+      slug: 'lower-east-side', name: 'Lower East Side', tag: 'Downtown · East Side', x: 22, y: 88,
       desc: 'Placeholder field recording — tight streets and overlapping conversation on a dense block.',
       file: 'LES_AMB_03', duration: '0:38',
       filterType: 'lowpass', freq: 2400, q: 0.5, level: 0.055,
       blip: 'honk', blipRange: [3000, 6200],
     },
     {
-      slug: 'lincoln-square', name: 'Lincoln Square', tag: 'Upper West Side', x: 37.2, y: 64.0,
+      slug: 'lincoln-square', name: 'Lincoln Square', tag: 'Upper West Side', x: 30, y: 60,
       desc: 'Placeholder field recording — traffic circling near Lincoln Center, a smoother hum by the plazas.',
       file: 'LINCOLNSQ_AMB_04', duration: '0:45',
       filterType: 'lowpass', freq: 1300, q: 0.6, level: 0.045,
       blip: 'honk', blipRange: [4200, 7500],
     },
     {
-      slug: 'west-village', name: 'West Village', tag: 'Downtown · West Side', x: 21.9, y: 81.2,
+      slug: 'west-village', name: 'West Village', tag: 'Downtown · West Side', x: 20, y: 75,
       desc: 'Placeholder field recording — quiet tree-lined blocks and soft café chatter.',
       file: 'WVILLAGE_AMB_05', duration: '0:58',
       filterType: 'lowpass', freq: 1700, q: 0.5, level: 0.045,
